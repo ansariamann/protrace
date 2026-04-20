@@ -31,7 +31,8 @@ export const Route = createFileRoute("/")({
 
 function TodayPage() {
   const { state, addActivity, applyTemplates } = useAppState();
-  const now = useTicker(1000);
+  const hasRunning = state.activities.some((a) => a.runningSince != null);
+  const now = useTicker(1000, hasRunning);
   const [open, setOpen] = React.useState(false);
   const [name, setName] = React.useState("");
   const [minutes, setMinutes] = React.useState<number | "">(30);
