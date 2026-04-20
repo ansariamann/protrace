@@ -81,9 +81,9 @@ export function ActivityCard({ activity, now }: Props) {
           onClick={() => (running ? pauseActivity(activity.id) : startActivity(activity.id))}
           disabled={activity.completed}
           aria-label={running ? "Pause" : "Start"}
+          style={{ backgroundImage: "var(--gradient-primary)" }}
           className={cn(
-            "relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-primary-foreground shadow-[var(--shadow-glow)] transition-transform active:scale-95 disabled:opacity-40 disabled:shadow-none",
-            "bg-[var(--gradient-primary)]",
+            "relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[var(--shadow-glow)] transition-transform active:scale-95 disabled:opacity-40 disabled:shadow-none",
             running && "animate-pulse-ring",
           )}
         >

@@ -29,7 +29,8 @@ type DayLite = {
 
 function HistoryPage() {
   const { state } = useAppState();
-  const now = useTicker(2000);
+  const hasRunning = state.activities.some((a) => a.runningSince != null);
+  const now = useTicker(2000, hasRunning);
 
   const days: DayLite[] = React.useMemo(() => {
     const today: DayLite = {
@@ -120,10 +121,13 @@ function HistoryPage() {
                   />
                   <div
                     className={cn(
-                      "w-1/2 rounded-t bg-[var(--gradient-primary)] transition-opacity",
+                      "w-1/2 rounded-t bg-primary transition-opacity",
                       !isSel && "opacity-50",
                     )}
-                    style={{ height: `${Math.max(2, tH)}%` }}
+                    style={{
+                      height: `${Math.max(2, tH)}%`,
+                      backgroundImage: "var(--gradient-primary)",
+                    }}
                     title="Tracked"
                   />
                 </div>
@@ -144,7 +148,11 @@ function HistoryPage() {
             <span className="h-2 w-3 rounded bg-muted" /> Allocated
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <span className="h-2 w-3 rounded bg-[var(--gradient-primary)]" /> Tracked
+            <span
+              className="h-2 w-3 rounded bg-primary"
+              style={{ backgroundImage: "var(--gradient-primary)" }}
+            />{" "}
+            Tracked
           </span>
         </div>
       </div>

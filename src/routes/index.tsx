@@ -31,7 +31,8 @@ export const Route = createFileRoute("/")({
 
 function TodayPage() {
   const { state, addActivity, applyTemplates } = useAppState();
-  const now = useTicker(1000);
+  const hasRunning = state.activities.some((a) => a.runningSince != null);
+  const now = useTicker(1000, hasRunning);
   const [open, setOpen] = React.useState(false);
   const [name, setName] = React.useState("");
   const [minutes, setMinutes] = React.useState<number | "">(30);
@@ -87,7 +88,8 @@ function TodayPage() {
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
           <button
-            className="fixed bottom-24 left-1/2 z-30 inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-[var(--gradient-primary)] px-6 py-3 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-glow)] transition-transform active:scale-95"
+            style={{ backgroundImage: "var(--gradient-primary)" }}
+            className="fixed bottom-24 left-1/2 z-30 inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-glow)] transition-transform active:scale-95"
             aria-label="Add activity"
           >
             <Plus className="h-5 w-5" strokeWidth={2.5} />
