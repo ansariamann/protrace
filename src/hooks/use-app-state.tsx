@@ -203,12 +203,14 @@ export function useAppState(): Ctx {
   return ctx;
 }
 
-/** Re-renders every `intervalMs` for live timer ticks. */
-export function useTicker(intervalMs = 1000): number {
+/** Re-renders every `intervalMs`, but only when `active` is true. */
+export function useTicker(intervalMs = 1000, active = true): number {
   const [now, setNow] = React.useState(() => Date.now());
   React.useEffect(() => {
+    if (!active) return;
+    setNow(Date.now());
     const id = setInterval(() => setNow(Date.now()), intervalMs);
     return () => clearInterval(id);
-  }, [intervalMs]);
+  }, [intervalMs, active]);
   return now;
 }
