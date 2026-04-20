@@ -1,0 +1,214 @@
+import * as React from "react";
+import {
+  type Activity,
+  type AppState,
+  type Template,
+  type Theme,
+  defaultState,
+  loadState,
+  rolloverIfNewDay,
+  saveState,
+  stopActivity,
+  uid,
+} from "@/lib/storage";
+
+type Ctx = {
+  state: AppState;
+  // activities
+  addActivity: (name: string, minutes: number) => void;
+  startActivity: (id: string) => void;
+  pauseActivity: (id: string) => void;
+  resetActivity: (id: string) => void;
+  toggleComplete: (id: string) => void;
+  renameActivity: (id: string, name: string, minutes: number) => void;
+  deleteActivity: (id: string) => void;
+  applyTemplates: () => void;
+  // templates
+  addTemplate: (name: string, minutes: number) => void;
+  updateTemplate: (id: string, name: string, minutes: number) => void;
+  deleteTemplate: (id: string) => void;
+  // settings
+  setTheme: (t: Theme) => void;
+  setAutoApply: (v: boolean) => void;
+  clearAll: () => void;
+};
+
+const AppCtx = React.createContext<Ctx | null>(null);
+
+export function AppStateProvider({ children }: { children: React.ReactNode }) {
+  const [state, setState] = React.useState<AppState>(() => defaultState());
+  const [hydrated, setHydrated] = React.useState(false);
+
+  // Hydrate from localStorage on the client and roll over the day if needed.
+  React.useEffect(() => {
+    const loaded = rolloverIfNewDay(loadState());
+    setState(loaded);
+    setHydrated(true);
+  }, []);
+
+  // Persist on every change (after hydration).
+  React.useEffect(() => {
+    if (hydrated) saveState(state);
+  }, [state, hydrated]);
+
+  // Apply theme class.
+  React.useEffect(() => {
+    if (typeof document === "undefined") return;
+    const root = document.documentElement;
+    const apply = () => {
+      const isDark =
+        state.theme === "dark" ||
+        (state.theme === "system" &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches);
+      root.classList.toggle("dark", isDark);
+    };
+    apply();
+    if (state.theme === "system") {
+      const mq = window.matchMedia("(prefers-color-scheme: dark)");
+      mq.addEventListener("change", apply);
+      return () => mq.removeEventListener("change", apply);
+    }
+  }, [state.theme]);
+
+  // Periodically check for day rollover (e.g. user leaves tab open past midnight).
+  React.useEffect(() => {
+    if (!hydrated) return;
+    const id = setInterval(() => {
+      setState((s) => rolloverIfNewDay(s));
+    }, 60_000);
+    return () => clearInterval(id);
+  }, [hydrated]);
+
+  const value = React.useMemo<Ctx>(
+    () => ({
+      state,
+      addActivity: (name, minutes) =>
+        setState((s) => ({
+          ...s,
+          activities: [
+            ...s.activities,
+            {
+              id: uid(),
+              name: name.trim() || "Untitled",
+              allocatedMs: Math.max(1, Math.round(minutes)) * 60_000,
+              elapsedMs: 0,
+              runningSince: null,
+              completed: false,
+            },
+          ],
+        })),
+      startActivity: (id) =>
+        setState((s) => {
+          const now = Date.now();
+          const activities = s.activities.map((a) => {
+            if (a.id === id) {
+              return a.runningSince != null ? a : { ...a, runningSince: now };
+            }
+            // Auto-pause anything else running.
+            return a.runningSince != null ? stopActivity(a, now) : a;
+          });
+          return { ...s, activities };
+        }),
+      pauseActivity: (id) =>
+        setState((s) => ({
+          ...s,
+          activities: s.activities.map((a) => (a.id === id ? stopActivity(a) : a)),
+        })),
+      resetActivity: (id) =>
+        setState((s) => ({
+          ...s,
+          activities: s.activities.map((a) =>
+            a.id === id ? { ...a, elapsedMs: 0, runningSince: null } : a,
+          ),
+        })),
+      toggleComplete: (id) =>
+        setState((s) => ({
+          ...s,
+          activities: s.activities.map((a) => {
+            if (a.id !== id) return a;
+            const stopped = stopActivity(a);
+            return { ...stopped, completed: !stopped.completed };
+          }),
+        })),
+      renameActivity: (id, name, minutes) =>
+        setState((s) => ({
+          ...s,
+          activities: s.activities.map((a) =>
+            a.id === id
+              ? {
+                  ...a,
+                  name: name.trim() || a.name,
+                  allocatedMs: Math.max(1, Math.round(minutes)) * 60_000,
+                }
+              : a,
+          ),
+        })),
+      deleteActivity: (id) =>
+        setState((s) => ({ ...s, activities: s.activities.filter((a) => a.id !== id) })),
+      applyTemplates: () =>
+        setState((s) => {
+          const existingNames = new Set(s.activities.map((a) => a.name.toLowerCase()));
+          const additions: Activity[] = s.templates
+            .filter((t) => !existingNames.has(t.name.toLowerCase()))
+            .map((t) => ({
+              id: uid(),
+              name: t.name,
+              allocatedMs: t.allocatedMs,
+              elapsedMs: 0,
+              runningSince: null,
+              completed: false,
+            }));
+          return { ...s, activities: [...s.activities, ...additions] };
+        }),
+      addTemplate: (name, minutes) =>
+        setState((s) => ({
+          ...s,
+          templates: [
+            ...s.templates,
+            {
+              id: uid(),
+              name: name.trim() || "Untitled",
+              allocatedMs: Math.max(1, Math.round(minutes)) * 60_000,
+            },
+          ],
+        })),
+      updateTemplate: (id, name, minutes) =>
+        setState((s) => ({
+          ...s,
+          templates: s.templates.map((t) =>
+            t.id === id
+              ? {
+                  ...t,
+                  name: name.trim() || t.name,
+                  allocatedMs: Math.max(1, Math.round(minutes)) * 60_000,
+                }
+              : t,
+          ),
+        })),
+      deleteTemplate: (id) =>
+        setState((s) => ({ ...s, templates: s.templates.filter((t) => t.id !== id) })),
+      setTheme: (theme) => setState((s) => ({ ...s, theme })),
+      setAutoApply: (v) => setState((s) => ({ ...s, autoApplyTemplates: v })),
+      clearAll: () => setState(defaultState()),
+    }),
+    [state],
+  );
+
+  return <AppCtx.Provider value={value}>{children}</AppCtx.Provider>;
+}
+
+export function useAppState(): Ctx {
+  const ctx = React.useContext(AppCtx);
+  if (!ctx) throw new Error("useAppState must be used within AppStateProvider");
+  return ctx;
+}
+
+/** Re-renders every `intervalMs` for live timer ticks. */
+export function useTicker(intervalMs = 1000): number {
+  const [now, setNow] = React.useState(() => Date.now());
+  React.useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), intervalMs);
+    return () => clearInterval(id);
+  }, [intervalMs]);
+  return now;
+}
