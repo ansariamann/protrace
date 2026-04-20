@@ -1,6 +1,9 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
+import { AppStateProvider } from "@/hooks/use-app-state";
+import { BottomNav } from "@/components/BottomNav";
+import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
   return (
@@ -28,22 +31,27 @@ export const Route = createRootRoute({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      {
+        name: "viewport",
+        content:
+          "width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover",
+      },
+      { title: "Daily Activity Timer — Track your time, every day" },
+      {
+        name: "description",
+        content:
+          "Plan your day, allocate time to activities, run a stopwatch for each, and review your last 5 days of efficiency.",
+      },
+      { name: "theme-color", content: "#ffffff" },
+      { property: "og:title", content: "Daily Activity Timer" },
+      {
+        property: "og:description",
+        content: "Track how efficiently you spend your day. Resets every day.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
-    links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
-    ],
+    links: [{ rel: "stylesheet", href: appCss }],
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -65,5 +73,13 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
-  return <Outlet />;
+  return (
+    <AppStateProvider>
+      <div className="mx-auto min-h-screen max-w-md bg-background pb-24">
+        <Outlet />
+      </div>
+      <BottomNav />
+      <Toaster />
+    </AppStateProvider>
+  );
 }
