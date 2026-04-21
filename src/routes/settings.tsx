@@ -320,17 +320,67 @@ function SettingsPage() {
         <Button
           variant="ghost"
           className="w-full text-destructive hover:bg-destructive/10 hover:text-destructive"
-          onClick={() => {
-            if (confirm("Clear all activities, history and templates? This cannot be undone.")) {
-              clearAll();
-              toast.success("All data cleared");
-            }
-          }}
+          onClick={() => setConfirmClear(true)}
         >
           <Trash2 className="h-4 w-4" />
           Clear all data
         </Button>
       </section>
+
+      {/* Confirm: delete template */}
+      <AlertDialog
+        open={confirmDeleteTpl !== null}
+        onOpenChange={(o) => !o && setConfirmDeleteTpl(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete template?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This template will be removed. Activities already added to today are not affected.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (confirmDeleteTpl) {
+                  deleteTemplate(confirmDeleteTpl);
+                  toast.success("Template deleted");
+                }
+                setConfirmDeleteTpl(null);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Confirm: clear all */}
+      <AlertDialog open={confirmClear} onOpenChange={setConfirmClear}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Clear everything?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This wipes today's activities, all history, templates, and preferences. Cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                clearAll();
+                toast.success("All data cleared");
+                setConfirmClear(false);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Clear all
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
