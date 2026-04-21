@@ -55,6 +55,8 @@ function SettingsPage() {
   const [editingId, setEditingId] = React.useState<string | null>(null);
   const [editName, setEditName] = React.useState("");
   const [editMinutes, setEditMinutes] = React.useState<number>(30);
+  const [confirmDeleteTpl, setConfirmDeleteTpl] = React.useState<string | null>(null);
+  const [confirmClear, setConfirmClear] = React.useState(false);
 
   const handleAddToday = () => {
     const m = typeof todayMin === "number" ? todayMin : Number(todayMin);
@@ -148,10 +150,22 @@ function SettingsPage() {
             variant="secondary"
             disabled={state.templates.length === 0}
             onClick={() => {
-              applyTemplates();
-              toast.success("Templates added to today");
+              const { added, skipped } = applyTemplates();
+              if (added === 0 && skipped > 0) {
+                toast.info("All templates are already on today", {
+                  description: "Delete or rename existing activities to re-add.",
+                });
+              } else if (added === 0) {
+                toast.error("No templates to apply");
+              } else {
+                toast.success(
+                  `Added ${added} ${added === 1 ? "template" : "templates"} to today` +
+                    (skipped ? ` · skipped ${skipped} duplicate${skipped === 1 ? "" : "s"}` : ""),
+                );
+              }
             }}
           >
+            <Sparkles className="h-3.5 w-3.5" />
             Apply all
           </Button>
         </div>
@@ -162,65 +176,75 @@ function SettingsPage() {
               No templates yet.
             </p>
           )}
-          {state.templates.map((t) => (
-            <div
-              key={t.id}
-              className="rounded-xl border border-border bg-card p-3 shadow-[var(--shadow-soft)] transition-colors hover:border-primary/30"
-            >
-              {editingId === t.id ? (
-                <div className="space-y-2">
-                  <Input value={editName} onChange={(e) => setEditName(e.target.value)} />
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="number"
-                      min={1}
-                      value={editMinutes}
-                      onChange={(e) => setEditMinutes(Number(e.target.value))}
-                      className="w-24"
-                    />
-                    <span className="text-xs text-muted-foreground">minutes</span>
-                    <div className="ml-auto flex gap-1">
-                      <Button size="icon" variant="ghost" onClick={() => setEditingId(null)}>
-                        <X className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="icon"
-                        onClick={() => {
-                          updateTemplate(t.id, editName, editMinutes);
-                          setEditingId(null);
-                        }}
-                      >
-                        <Check className="h-4 w-4" />
-                      </Button>
+          <AnimatePresence initial={false}>
+            {state.templates.map((t) => (
+              <motion.div
+                key={t.id}
+                layout
+                initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.15 } }}
+                transition={{ type: "spring", stiffness: 400, damping: 32 }}
+                className="rounded-xl border border-border bg-card p-3 shadow-[var(--shadow-soft)] transition-colors hover:border-primary/40"
+              >
+                {editingId === t.id ? (
+                  <div className="space-y-2">
+                    <Input value={editName} onChange={(e) => setEditName(e.target.value)} autoFocus />
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        min={1}
+                        value={editMinutes}
+                        onChange={(e) => setEditMinutes(Number(e.target.value))}
+                        className="w-24"
+                      />
+                      <span className="text-xs text-muted-foreground">minutes</span>
+                      <div className="ml-auto flex gap-1">
+                        <Button size="icon" variant="ghost" onClick={() => setEditingId(null)}>
+                          <X className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          onClick={() => {
+                            updateTemplate(t.id, editName, editMinutes);
+                            setEditingId(null);
+                            toast.success("Template updated");
+                          }}
+                        >
+                          <Check className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ) : (
-                <div className="flex items-center gap-3">
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold">{t.name}</p>
-                    <p className="font-mono text-xs text-muted-foreground">
-                      {formatMin(t.allocatedMs)}
-                    </p>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold">{t.name}</p>
+                      <p className="font-mono text-xs text-muted-foreground">
+                        {formatMin(t.allocatedMs)}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                      onClick={() => startEdit(t.id, t.name, t.allocatedMs)}
+                      aria-label="Edit"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                      onClick={() => setConfirmDeleteTpl(t.id)}
+                      aria-label="Delete"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
                   </div>
-                  <button
-                    className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                    onClick={() => startEdit(t.id, t.name, t.allocatedMs)}
-                    aria-label="Edit"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </button>
-                  <button
-                    className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-                    onClick={() => deleteTemplate(t.id)}
-                    aria-label="Delete"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              )}
-            </div>
-          ))}
+                )}
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
 
         {/* Add template */}
@@ -245,7 +269,13 @@ function SettingsPage() {
                 className="w-24"
                 placeholder="min"
               />
-              <Button onClick={handleAdd} disabled={!name.trim() || !minutes}>
+              <Button
+                onClick={() => {
+                  handleAdd();
+                  if (name.trim() && minutes) toast.success("Template saved");
+                }}
+                disabled={!name.trim() || !minutes}
+              >
                 <Plus className="h-4 w-4" />
                 Save
               </Button>
