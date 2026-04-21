@@ -1,10 +1,21 @@
 import * as React from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Plus, Pencil, Trash2, Check, X, Sun, Moon, Monitor, Sparkles, Volume2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useAppState } from "@/hooks/use-app-state";
 import { type Theme, formatMin } from "@/lib/storage";
 import { cn } from "@/lib/utils";
