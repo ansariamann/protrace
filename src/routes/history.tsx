@@ -70,24 +70,28 @@ function HistoryPage() {
   );
 
   return (
-    <div className="px-5 pt-8">
-      <header>
-        <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">History</p>
-        <h1 className="mt-1 text-2xl font-bold tracking-tight">Last 5 days</h1>
+    <div className="mx-auto max-w-3xl px-5 pt-8 lg:px-10 lg:pt-12">
+      <header className="border-b border-border pb-6">
+        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary">
+          ◆ History
+        </p>
+        <h1 className="mt-3 font-display text-5xl font-black tracking-tight lg:text-6xl">
+          Last 5 days.
+        </h1>
       </header>
 
       {/* Day chips */}
-      <div className="-mx-5 mt-5 overflow-x-auto px-5 pb-1">
+      <div className="-mx-5 mt-6 overflow-x-auto px-5 pb-1 lg:mx-0 lg:px-0">
         <div className="flex gap-2">
           {days.map((d, i) => (
             <button
               key={d.date}
               onClick={() => setSelected(i)}
               className={cn(
-                "shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition-all",
+                "shrink-0 rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-wider transition-all",
                 selected === i
                   ? "border-primary bg-primary text-primary-foreground shadow-[var(--shadow-glow)]"
-                  : "border-border bg-card text-foreground hover:bg-accent",
+                  : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground",
               )}
             >
               {chipLabel(d.date, d.isToday)}

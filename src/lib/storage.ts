@@ -37,6 +37,7 @@ export type AppState = {
   templates: Template[];
   theme: Theme;
   autoApplyTemplates: boolean;
+  soundEnabled: boolean;
 };
 
 const STORAGE_KEY = "dat.state.v1";
@@ -66,9 +67,15 @@ export function defaultState(): AppState {
     activities: [],
     history: [],
     templates: DEFAULT_TEMPLATES,
-    theme: "system",
+    theme: "dark",
     autoApplyTemplates: false,
+    soundEnabled: true,
   };
+}
+
+/** Remaining ms until allocation runs out (>= 0, clamped). */
+export function remainingMs(a: Activity, now = Date.now()): number {
+  return Math.max(0, a.allocatedMs - liveElapsed(a, now));
 }
 
 export function loadState(): AppState {

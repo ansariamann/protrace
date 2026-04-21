@@ -1,16 +1,8 @@
 import * as React from "react";
-import { createFileRoute } from "@tanstack/react-router";
-import { Plus, Sparkles } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Sparkles, ArrowRight, Hourglass } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import { ActivityCard } from "@/components/ActivityCard";
 import { EfficiencyRing } from "@/components/EfficiencyRing";
 import { useAppState, useTicker } from "@/hooks/use-app-state";
@@ -19,7 +11,7 @@ import { formatMin, liveElapsed } from "@/lib/storage";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Today — Daily Activity Timer" },
+      { title: "Today — Protrace" },
       {
         name: "description",
         content: "Today's activities and timers. Track how you spend your day.",
@@ -30,133 +22,165 @@ export const Route = createFileRoute("/")({
 });
 
 function TodayPage() {
-  const { state, addActivity, applyTemplates } = useAppState();
+  const { state, applyTemplates } = useAppState();
   const hasRunning = state.activities.some((a) => a.runningSince != null);
   const now = useTicker(1000, hasRunning);
-  const [open, setOpen] = React.useState(false);
-  const [name, setName] = React.useState("");
-  const [minutes, setMinutes] = React.useState<number | "">(30);
 
   const totalAllocated = state.activities.reduce((s, a) => s + a.allocatedMs, 0);
   const totalElapsed = state.activities.reduce((s, a) => s + liveElapsed(a, now), 0);
+  const totalRemaining = Math.max(0, totalAllocated - totalElapsed);
   const efficiency = totalAllocated > 0 ? totalElapsed / totalAllocated : 0;
   const pct = Math.round(efficiency * 100);
+  const completedCount = state.activities.filter((a) => a.completed).length;
 
-  const dateLabel = new Date().toLocaleDateString(undefined, {
-    weekday: "long",
+  const today = new Date();
+  const dayName = today.toLocaleDateString(undefined, { weekday: "long" });
+  const dateLabel = today.toLocaleDateString(undefined, {
     month: "long",
     day: "numeric",
   });
 
-  const handleAdd = () => {
-    const m = typeof minutes === "number" ? minutes : Number(minutes);
-    if (!name.trim() || !m || m < 1) return;
-    addActivity(name, m);
-    setName("");
-    setMinutes(30);
-    setOpen(false);
-  };
-
   return (
-    <div className="px-5 pt-8">
-      {/* Header */}
-      <header className="flex items-center justify-between">
-        <div>
-          <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Today</p>
-          <h1 className="mt-1 text-2xl font-bold leading-tight tracking-tight">{dateLabel}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {formatMin(totalElapsed)} of {formatMin(totalAllocated || 0)} tracked
+    <div className="mx-auto max-w-3xl px-5 pt-8 lg:px-10 lg:pt-12">
+      {/* Editorial masthead */}
+      <header className="border-b border-border pb-6">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary">
+            ◆ Today
+          </p>
+          <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+            {today.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
           </p>
         </div>
-        <EfficiencyRing
-          progress={efficiency}
-          label={`${pct}%`}
-          sublabel="Used"
-        />
+        <h1 className="mt-3 font-display text-5xl font-black leading-[0.95] tracking-tight lg:text-6xl">
+          {dayName}.
+          <br />
+          <span className="text-muted-foreground">{dateLabel}</span>
+        </h1>
       </header>
 
-      {/* List */}
-      <section className="mt-6 space-y-3">
-        {state.activities.length === 0 ? (
-          <EmptyState onApplyTemplates={state.templates.length > 0 ? applyTemplates : undefined} />
-        ) : (
-          state.activities.map((a) => <ActivityCard key={a.id} activity={a} now={now} />)
-        )}
+      {/* Hero stats */}
+      <section className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
+        <div className="grid grid-cols-3 gap-3">
+          <Stat label="Allocated" value={formatMin(totalAllocated)} />
+          <Stat label="Used" value={formatMin(totalElapsed)} accent />
+          <Stat label="Left" value={formatMin(totalRemaining)} />
+        </div>
+        <div className="flex items-center justify-between rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-soft)] lg:px-6">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              Efficiency
+            </p>
+            <p className="mt-1 font-display text-3xl font-bold tracking-tight">
+              {pct}<span className="text-lg text-muted-foreground">%</span>
+            </p>
+            <p className="mt-0.5 text-[11px] text-muted-foreground">
+              {completedCount} of {state.activities.length} done
+            </p>
+          </div>
+          <EfficiencyRing progress={efficiency} size={84} stroke={7} />
+        </div>
       </section>
 
-      {/* Sticky add button */}
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetTrigger asChild>
-          <button
-            style={{ backgroundImage: "var(--gradient-primary)" }}
-            className="fixed bottom-24 left-1/2 z-30 inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-glow)] transition-transform active:scale-95"
-            aria-label="Add activity"
-          >
-            <Plus className="h-5 w-5" strokeWidth={2.5} />
-            Add activity
-          </button>
-        </SheetTrigger>
-        <SheetContent side="bottom" className="rounded-t-3xl">
-          <SheetHeader>
-            <SheetTitle>New activity</SheetTitle>
-          </SheetHeader>
-          <div className="mt-4 space-y-4">
-            <div>
-              <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-                Name
-              </label>
-              <Input
-                autoFocus
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Deep work"
-                onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+      {/* Activity list */}
+      <section className="mt-8">
+        <div className="flex items-end justify-between">
+          <h2 className="font-display text-xl font-bold tracking-tight">
+            Activities
+          </h2>
+          <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+            {state.activities.length} total
+          </span>
+        </div>
+
+        <div className="mt-4 space-y-3 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
+          {state.activities.length === 0 ? (
+            <div className="lg:col-span-2">
+              <EmptyState
+                hasTemplates={state.templates.length > 0}
+                onApplyTemplates={applyTemplates}
               />
             </div>
-            <div>
-              <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-                Allocated minutes
-              </label>
-              <Input
-                type="number"
-                inputMode="numeric"
-                min={1}
-                value={minutes}
-                onChange={(e) =>
-                  setMinutes(e.target.value === "" ? "" : Number(e.target.value))
-                }
-              />
-            </div>
-            <Button
-              onClick={handleAdd}
-              className="w-full"
-              size="lg"
-              disabled={!name.trim() || !minutes}
-            >
-              Add to today
-            </Button>
-          </div>
-        </SheetContent>
-      </Sheet>
+          ) : (
+            state.activities.map((a) => <ActivityCard key={a.id} activity={a} now={now} />)
+          )}
+        </div>
+      </section>
     </div>
   );
 }
 
-function EmptyState({ onApplyTemplates }: { onApplyTemplates?: () => void }) {
+function Stat({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: string;
+  accent?: boolean;
+}) {
   return (
-    <div className="rounded-2xl border border-dashed border-border bg-card/40 p-8 text-center">
-      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-        <Sparkles className="h-6 w-6" />
-      </div>
-      <h3 className="mt-3 text-base font-semibold">Plan your day</h3>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Add activities below, or load your saved templates in one tap.
+    <div className="rounded-xl border border-border bg-card/60 p-3">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+        {label}
       </p>
-      {onApplyTemplates && (
-        <Button onClick={onApplyTemplates} variant="secondary" className="mt-4">
-          Load templates
-        </Button>
-      )}
+      <p
+        className={`mt-1 font-mono text-lg font-bold tabular-nums ${
+          accent ? "text-primary" : "text-foreground"
+        }`}
+      >
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function EmptyState({
+  hasTemplates,
+  onApplyTemplates,
+}: {
+  hasTemplates: boolean;
+  onApplyTemplates: () => void;
+}) {
+  return (
+    <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-10 text-center shadow-[var(--shadow-card)]">
+      <div
+        className="pointer-events-none absolute inset-0 opacity-30"
+        style={{
+          background:
+            "radial-gradient(ellipse at top, var(--primary) 0%, transparent 50%)",
+        }}
+      />
+      <div className="relative">
+        <div
+          className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl shadow-[var(--shadow-glow)]"
+          style={{ backgroundImage: "var(--gradient-primary)" }}
+        >
+          <Hourglass className="h-8 w-8 text-primary-foreground" strokeWidth={2.5} />
+        </div>
+        <h3 className="mt-5 font-display text-2xl font-bold tracking-tight">
+          Plan your day
+        </h3>
+        <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
+          {hasTemplates
+            ? "Load your saved templates in one tap, or add new activities in Settings."
+            : "Add activities in Settings to start tracking your day."}
+        </p>
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+          {hasTemplates && (
+            <Button onClick={onApplyTemplates} size="lg">
+              <Sparkles className="h-4 w-4" />
+              Load templates
+            </Button>
+          )}
+          <Button asChild variant="outline" size="lg">
+            <Link to="/settings">
+              Manage activities
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

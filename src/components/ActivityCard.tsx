@@ -1,7 +1,6 @@
 import * as React from "react";
-import { Pause, Play, RotateCcw, Check, Pencil, Trash2, ChevronDown } from "lucide-react";
+import { Pause, Play, RotateCcw, Check, Trash2, ChevronDown, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useAppState } from "@/hooks/use-app-state";
 import { type Activity, formatHMS, formatMin, liveElapsed } from "@/lib/storage";
 import { cn } from "@/lib/utils";
@@ -14,68 +13,75 @@ export function ActivityCard({ activity, now }: Props) {
     pauseActivity,
     resetActivity,
     toggleComplete,
-    renameActivity,
     deleteActivity,
   } = useAppState();
   const [expanded, setExpanded] = React.useState(false);
-  const [editing, setEditing] = React.useState(false);
-  const [name, setName] = React.useState(activity.name);
-  const [minutes, setMinutes] = React.useState(Math.round(activity.allocatedMs / 60_000));
 
   const elapsed = liveElapsed(activity, now);
   const allocated = activity.allocatedMs;
+  const remaining = Math.max(0, allocated - elapsed);
   const ratio = allocated > 0 ? elapsed / allocated : 0;
   const pct = Math.min(100, ratio * 100);
   const running = activity.runningSince != null;
+  const finished = elapsed >= allocated;
   const over = elapsed > allocated;
-
-  const barColor = activity.completed
-    ? "bg-success"
-    : over
-      ? "bg-warning"
-      : "bg-gradient-to-r from-primary to-[var(--primary-glow)]";
 
   return (
     <div
       className={cn(
-        "group relative overflow-hidden rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-soft)] transition-all",
-        running && "ring-2 ring-primary/40",
-        activity.completed && "opacity-70",
+        "group relative overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-all animate-slide-up",
+        running && "border-primary/40 ring-1 ring-primary/30",
+        activity.completed && "opacity-60",
       )}
     >
-      <div className="flex items-start gap-3">
-        <button
-          onClick={() => setExpanded((v) => !v)}
-          className="min-w-0 flex-1 text-left"
-        >
+      {/* Subtle gradient halo when running */}
+      {running && (
+        <div
+          className="pointer-events-none absolute -inset-px rounded-2xl opacity-30"
+          style={{
+            background:
+              "radial-gradient(ellipse at top right, var(--primary) 0%, transparent 60%)",
+          }}
+        />
+      )}
+
+      <div className="relative flex items-start gap-4">
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <h3
               className={cn(
-                "truncate text-base font-semibold",
+                "truncate text-base font-semibold tracking-tight",
                 activity.completed && "line-through text-muted-foreground",
               )}
             >
               {activity.name}
             </h3>
-            <ChevronDown
-              className={cn(
-                "h-4 w-4 shrink-0 text-muted-foreground transition-transform",
-                expanded && "rotate-180",
-              )}
-            />
+            {finished && !activity.completed && (
+              <span className="shrink-0 rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
+                Done
+              </span>
+            )}
           </div>
-          <div className="mt-1 flex items-baseline gap-2">
+
+          {/* Big countdown */}
+          <div className="mt-2 flex items-baseline gap-3">
             <span
               className={cn(
-                "font-mono text-2xl font-bold tabular-nums tracking-tight",
-                running && "text-primary",
+                "font-mono text-4xl font-bold tabular-nums tracking-tight transition-colors",
+                running && !finished && "text-primary",
+                finished && "text-primary",
+                over && "text-warning",
               )}
+              style={{ fontVariantNumeric: "tabular-nums" }}
             >
-              {formatHMS(elapsed)}
+              {formatHMS(remaining)}
             </span>
-            <span className="text-xs text-muted-foreground">/ {formatMin(allocated)}</span>
+            <span className="text-xs text-muted-foreground">left</span>
           </div>
-        </button>
+          <p className="mt-0.5 text-[11px] text-muted-foreground">
+            {formatMin(elapsed)} of {formatMin(allocated)} used
+          </p>
+        </div>
 
         <button
           onClick={() => (running ? pauseActivity(activity.id) : startActivity(activity.id))}
@@ -83,91 +89,69 @@ export function ActivityCard({ activity, now }: Props) {
           aria-label={running ? "Pause" : "Start"}
           style={{ backgroundImage: "var(--gradient-primary)" }}
           className={cn(
-            "relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[var(--shadow-glow)] transition-transform active:scale-95 disabled:opacity-40 disabled:shadow-none",
+            "relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full text-primary-foreground shadow-[var(--shadow-glow)] transition-all active:scale-90 disabled:opacity-30 disabled:shadow-none",
             running && "animate-pulse-ring",
           )}
         >
-          {running ? <Pause className="h-6 w-6" fill="currentColor" /> : <Play className="h-6 w-6 translate-x-0.5" fill="currentColor" />}
+          {running ? (
+            <Pause className="h-7 w-7" fill="currentColor" />
+          ) : (
+            <Play className="h-7 w-7 translate-x-0.5" fill="currentColor" />
+          )}
         </button>
       </div>
 
-      {/* Progress bar */}
-      <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
+      {/* Progress track — animated shimmer when running */}
+      <div className="relative mt-4 h-1.5 overflow-hidden rounded-full bg-muted">
         <div
-          className={cn("h-full rounded-full transition-all duration-500", barColor)}
+          className={cn(
+            "h-full rounded-full transition-all duration-700 ease-out",
+            !running && !finished && "bg-foreground/40",
+            finished && !over && "bg-primary",
+            over && "bg-warning",
+            running && !finished && "shimmer-bar",
+          )}
           style={{ width: `${pct}%` }}
         />
       </div>
-      {over && !activity.completed && (
-        <p className="mt-1.5 text-[11px] font-medium text-warning-foreground/80">
-          +{formatMin(elapsed - allocated)} over allocated
-        </p>
-      )}
 
-      {/* Expanded actions */}
+      <div className="mt-2 flex items-center justify-between text-[10px] uppercase tracking-wider text-muted-foreground">
+        <span>{Math.round(pct)}%</span>
+        <button
+          onClick={() => setExpanded((v) => !v)}
+          className="inline-flex items-center gap-1 rounded-md px-2 py-1 transition-colors hover:bg-accent hover:text-foreground"
+        >
+          <MoreHorizontal className="h-3.5 w-3.5" />
+          {expanded ? "Hide" : "Actions"}
+          <ChevronDown
+            className={cn("h-3 w-3 transition-transform", expanded && "rotate-180")}
+          />
+        </button>
+      </div>
+
       {expanded && (
-        <div className="mt-4 border-t border-border pt-3">
-          {editing ? (
-            <div className="space-y-2">
-              <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Activity name"
-              />
-              <div className="flex items-center gap-2">
-                <Input
-                  type="number"
-                  min={1}
-                  value={minutes}
-                  onChange={(e) => setMinutes(Number(e.target.value))}
-                  className="w-24"
-                />
-                <span className="text-sm text-muted-foreground">minutes</span>
-                <div className="ml-auto flex gap-2">
-                  <Button size="sm" variant="ghost" onClick={() => setEditing(false)}>
-                    Cancel
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      renameActivity(activity.id, name, minutes);
-                      setEditing(false);
-                    }}
-                  >
-                    Save
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => toggleComplete(activity.id)}
-              >
-                <Check className="h-4 w-4" />
-                {activity.completed ? "Reopen" : "Complete"}
-              </Button>
-              <Button size="sm" variant="ghost" onClick={() => resetActivity(activity.id)}>
-                <RotateCcw className="h-4 w-4" />
-                Reset
-              </Button>
-              <Button size="sm" variant="ghost" onClick={() => setEditing(true)}>
-                <Pencil className="h-4 w-4" />
-                Edit
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="ml-auto text-destructive hover:text-destructive"
-                onClick={() => deleteActivity(activity.id)}
-              >
-                <Trash2 className="h-4 w-4" />
-                Delete
-              </Button>
-            </div>
-          )}
+        <div className="mt-3 flex flex-wrap gap-2 border-t border-border pt-3 animate-slide-up">
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => toggleComplete(activity.id)}
+          >
+            <Check className="h-4 w-4" />
+            {activity.completed ? "Reopen" : "Complete"}
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => resetActivity(activity.id)}>
+            <RotateCcw className="h-4 w-4" />
+            Reset
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="ml-auto text-destructive hover:bg-destructive/10 hover:text-destructive"
+            onClick={() => deleteActivity(activity.id)}
+          >
+            <Trash2 className="h-4 w-4" />
+            Delete
+          </Button>
         </div>
       )}
     </div>

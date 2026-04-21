@@ -35,74 +35,81 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-ring-offset-background: var(--background);
+  --font-display: "Fraunces", "Georgia", serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
+/* Editorial dark palette: deep ink + electric lime accent. Bold + unexpected. */
 :root {
-  --radius: 1rem;
-  /* Calm warm neutral background */
-  --background: oklch(0.985 0.005 95);
-  --foreground: oklch(0.18 0.02 260);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.18 0.02 260);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.18 0.02 260);
-  /* Vibrant indigo accent */
-  --primary: oklch(0.55 0.22 270);
-  --primary-foreground: oklch(0.99 0 0);
-  --primary-glow: oklch(0.7 0.2 280);
-  --secondary: oklch(0.96 0.01 260);
-  --secondary-foreground: oklch(0.25 0.03 260);
-  --muted: oklch(0.96 0.008 250);
-  --muted-foreground: oklch(0.5 0.02 255);
-  --accent: oklch(0.95 0.03 280);
-  --accent-foreground: oklch(0.25 0.05 270);
-  --destructive: oklch(0.62 0.24 27);
+  --radius: 0.875rem;
+  --background: oklch(0.14 0.012 90);
+  --foreground: oklch(0.96 0.012 95);
+  --card: oklch(0.18 0.014 90);
+  --card-foreground: oklch(0.96 0.012 95);
+  --popover: oklch(0.18 0.014 90);
+  --popover-foreground: oklch(0.96 0.012 95);
+  /* Electric lime — high-contrast on ink */
+  --primary: oklch(0.88 0.21 118);
+  --primary-foreground: oklch(0.16 0.012 90);
+  --primary-glow: oklch(0.95 0.18 110);
+  --secondary: oklch(0.22 0.014 90);
+  --secondary-foreground: oklch(0.96 0.012 95);
+  --muted: oklch(0.22 0.014 90);
+  --muted-foreground: oklch(0.65 0.018 95);
+  --accent: oklch(0.26 0.04 100);
+  --accent-foreground: oklch(0.96 0.012 95);
+  --destructive: oklch(0.68 0.22 25);
   --destructive-foreground: oklch(0.99 0 0);
-  --success: oklch(0.68 0.17 155);
-  --success-foreground: oklch(0.99 0 0);
-  --warning: oklch(0.78 0.16 75);
-  --warning-foreground: oklch(0.2 0.04 60);
-  --border: oklch(0.92 0.008 260);
-  --input: oklch(0.94 0.008 260);
-  --ring: oklch(0.55 0.22 270);
+  --success: oklch(0.85 0.18 145);
+  --success-foreground: oklch(0.16 0.012 90);
+  --warning: oklch(0.82 0.18 65);
+  --warning-foreground: oklch(0.16 0.012 90);
+  --border: oklch(1 0 0 / 8%);
+  --input: oklch(1 0 0 / 10%);
+  --ring: oklch(0.88 0.21 118);
 
-  --gradient-primary: linear-gradient(135deg, oklch(0.55 0.22 270), oklch(0.7 0.2 310));
-  --gradient-success: linear-gradient(135deg, oklch(0.68 0.17 155), oklch(0.75 0.15 180));
-  --shadow-soft: 0 1px 2px oklch(0.2 0.02 260 / 0.04), 0 4px 16px oklch(0.2 0.02 260 / 0.06);
-  --shadow-card: 0 2px 8px oklch(0.2 0.02 260 / 0.05), 0 8px 32px oklch(0.2 0.02 260 / 0.08);
-  --shadow-glow: 0 0 32px oklch(0.55 0.22 270 / 0.35);
+  --gradient-primary: linear-gradient(135deg, oklch(0.88 0.21 118), oklch(0.78 0.2 95));
+  --gradient-warm: linear-gradient(135deg, oklch(0.82 0.18 65), oklch(0.68 0.22 35));
+  --gradient-ink: linear-gradient(180deg, oklch(0.18 0.014 90) 0%, oklch(0.14 0.012 90) 100%);
+  --shadow-soft: 0 1px 2px oklch(0 0 0 / 0.3), 0 4px 16px oklch(0 0 0 / 0.25);
+  --shadow-card: 0 2px 8px oklch(0 0 0 / 0.35), 0 12px 40px oklch(0 0 0 / 0.4);
+  --shadow-glow: 0 0 40px oklch(0.88 0.21 118 / 0.4), 0 0 80px oklch(0.88 0.21 118 / 0.15);
+
+  /* Subtle grain texture overlay color */
+  --grain: oklch(1 0 0 / 0.015);
 }
 
-.dark {
-  --background: oklch(0.16 0.015 265);
-  --foreground: oklch(0.97 0.005 250);
-  --card: oklch(0.21 0.02 265);
-  --card-foreground: oklch(0.97 0.005 250);
-  --popover: oklch(0.21 0.02 265);
-  --popover-foreground: oklch(0.97 0.005 250);
-  --primary: oklch(0.7 0.2 280);
-  --primary-foreground: oklch(0.15 0.02 265);
-  --primary-glow: oklch(0.78 0.18 290);
-  --secondary: oklch(0.27 0.025 265);
-  --secondary-foreground: oklch(0.97 0.005 250);
-  --muted: oklch(0.25 0.02 265);
-  --muted-foreground: oklch(0.7 0.02 255);
-  --accent: oklch(0.3 0.04 280);
-  --accent-foreground: oklch(0.97 0.005 250);
-  --destructive: oklch(0.7 0.2 25);
+/* Light mode = ivory paper + the same lime accent */
+.light {
+  --background: oklch(0.985 0.012 95);
+  --foreground: oklch(0.16 0.014 90);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.16 0.014 90);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.16 0.014 90);
+  --primary: oklch(0.78 0.2 118);
+  --primary-foreground: oklch(0.16 0.012 90);
+  --primary-glow: oklch(0.85 0.19 105);
+  --secondary: oklch(0.95 0.012 95);
+  --secondary-foreground: oklch(0.2 0.014 90);
+  --muted: oklch(0.94 0.014 95);
+  --muted-foreground: oklch(0.45 0.018 95);
+  --accent: oklch(0.94 0.04 110);
+  --accent-foreground: oklch(0.2 0.04 100);
+  --destructive: oklch(0.6 0.24 27);
   --destructive-foreground: oklch(0.99 0 0);
-  --success: oklch(0.72 0.17 160);
-  --success-foreground: oklch(0.15 0.02 265);
-  --warning: oklch(0.8 0.16 80);
+  --success: oklch(0.7 0.18 145);
+  --success-foreground: oklch(0.99 0 0);
+  --warning: oklch(0.78 0.18 65);
   --warning-foreground: oklch(0.2 0.04 60);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.7 0.2 280);
+  --border: oklch(0.16 0.014 90 / 10%);
+  --input: oklch(0.16 0.014 90 / 8%);
+  --ring: oklch(0.78 0.2 118);
 
-  --gradient-primary: linear-gradient(135deg, oklch(0.6 0.22 275), oklch(0.7 0.2 320));
-  --shadow-card: 0 2px 8px oklch(0 0 0 / 0.3), 0 8px 32px oklch(0 0 0 / 0.4);
-  --shadow-glow: 0 0 40px oklch(0.7 0.2 280 / 0.4);
+  --gradient-primary: linear-gradient(135deg, oklch(0.82 0.2 118), oklch(0.7 0.2 95));
+  --shadow-soft: 0 1px 2px oklch(0.2 0.02 90 / 0.05), 0 4px 16px oklch(0.2 0.02 90 / 0.08);
+  --shadow-card: 0 2px 8px oklch(0.2 0.02 90 / 0.06), 0 12px 40px oklch(0.2 0.02 90 / 0.1);
+  --shadow-glow: 0 0 32px oklch(0.78 0.2 118 / 0.35);
 }
 
 @layer base {
@@ -116,14 +123,59 @@
     color: var(--color-foreground);
     -webkit-font-smoothing: antialiased;
     overscroll-behavior-y: none;
+    font-feature-settings: "ss01", "cv11";
+  }
+
+  body {
+    background-image:
+      radial-gradient(circle at 0% 0%, oklch(0.88 0.21 118 / 0.06) 0%, transparent 40%),
+      radial-gradient(circle at 100% 100%, oklch(0.82 0.18 65 / 0.05) 0%, transparent 40%);
+    background-attachment: fixed;
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
   }
 }
 
+/* === Animations === */
 @keyframes pulse-ring {
-  0%, 100% { box-shadow: 0 0 0 0 oklch(0.55 0.22 270 / 0.4); }
-  50% { box-shadow: 0 0 0 12px oklch(0.55 0.22 270 / 0); }
+  0%, 100% { box-shadow: 0 0 0 0 oklch(0.88 0.21 118 / 0.5); }
+  50% { box-shadow: 0 0 0 16px oklch(0.88 0.21 118 / 0); }
+}
+.animate-pulse-ring { animation: pulse-ring 1.8s ease-out infinite; }
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.shimmer-bar {
+  background: linear-gradient(
+    90deg,
+    var(--primary) 0%,
+    var(--primary-glow) 30%,
+    var(--primary) 60%,
+    var(--primary-glow) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2.4s linear infinite;
 }
 
-.animate-pulse-ring {
-  animation: pulse-ring 1.8s ease-out infinite;
+@keyframes flash {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.animate-flash { animation: flash 0.6s ease-in-out 3; }
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-up { animation: slide-up 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+
+/* Tabular nums for timer */
+.font-display {
+  font-family: var(--font-display);
+  font-feature-settings: "ss01";
 }

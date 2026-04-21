@@ -2,15 +2,16 @@ import * as React from "react";
 import {
   type Activity,
   type AppState,
-  type Template,
   type Theme,
   defaultState,
   loadState,
   rolloverIfNewDay,
   saveState,
   stopActivity,
+  liveElapsed,
   uid,
 } from "@/lib/storage";
+import { playCompletionChime, unlockAudio } from "@/lib/sound";
 
 type Ctx = {
   state: AppState;
@@ -30,6 +31,7 @@ type Ctx = {
   // settings
   setTheme: (t: Theme) => void;
   setAutoApply: (v: boolean) => void;
+  setSoundEnabled: (v: boolean) => void;
   clearAll: () => void;
 };
 
@@ -38,29 +40,29 @@ const AppCtx = React.createContext<Ctx | null>(null);
 export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = React.useState<AppState>(() => defaultState());
   const [hydrated, setHydrated] = React.useState(false);
+  // Track which activities have already chimed to avoid repeat sounds.
+  const chimedRef = React.useRef<Set<string>>(new Set());
 
-  // Hydrate from localStorage on the client and roll over the day if needed.
   React.useEffect(() => {
     const loaded = rolloverIfNewDay(loadState());
     setState(loaded);
     setHydrated(true);
   }, []);
 
-  // Persist on every change (after hydration).
   React.useEffect(() => {
     if (hydrated) saveState(state);
   }, [state, hydrated]);
 
-  // Apply theme class.
+  // Apply theme: dark is default; "light" adds .light, "dark"/"system-dark" removes it.
   React.useEffect(() => {
     if (typeof document === "undefined") return;
     const root = document.documentElement;
     const apply = () => {
-      const isDark =
-        state.theme === "dark" ||
+      const isLight =
+        state.theme === "light" ||
         (state.theme === "system" &&
-          window.matchMedia("(prefers-color-scheme: dark)").matches);
-      root.classList.toggle("dark", isDark);
+          !window.matchMedia("(prefers-color-scheme: dark)").matches);
+      root.classList.toggle("light", isLight);
     };
     apply();
     if (state.theme === "system") {
@@ -70,7 +72,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     }
   }, [state.theme]);
 
-  // Periodically check for day rollover (e.g. user leaves tab open past midnight).
   React.useEffect(() => {
     if (!hydrated) return;
     const id = setInterval(() => {
@@ -78,6 +79,40 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     }, 60_000);
     return () => clearInterval(id);
   }, [hydrated]);
+
+  // Watch for any running activity hitting its allocation → chime + auto-pause.
+  React.useEffect(() => {
+    if (!hydrated) return;
+    const hasRunning = state.activities.some((a) => a.runningSince != null);
+    if (!hasRunning) return;
+
+    const tick = () => {
+      const now = Date.now();
+      let triggered: string | null = null;
+      for (const a of state.activities) {
+        if (a.runningSince == null || a.completed) continue;
+        if (chimedRef.current.has(a.id)) continue;
+        if (liveElapsed(a, now) >= a.allocatedMs) {
+          triggered = a.id;
+          break;
+        }
+      }
+      if (triggered) {
+        chimedRef.current.add(triggered);
+        if (state.soundEnabled) playCompletionChime();
+        // Auto-pause the finished one (still let user see "complete" state).
+        setState((s) => ({
+          ...s,
+          activities: s.activities.map((a) =>
+            a.id === triggered ? stopActivity(a) : a,
+          ),
+        }));
+      }
+    };
+
+    const id = setInterval(tick, 250);
+    return () => clearInterval(id);
+  }, [state.activities, state.soundEnabled, hydrated]);
 
   const value = React.useMemo<Ctx>(
     () => ({
@@ -97,30 +132,35 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
             },
           ],
         })),
-      startActivity: (id) =>
+      startActivity: (id) => {
+        unlockAudio();
+        chimedRef.current.delete(id);
         setState((s) => {
           const now = Date.now();
           const activities = s.activities.map((a) => {
             if (a.id === id) {
+              if (a.completed) return a;
               return a.runningSince != null ? a : { ...a, runningSince: now };
             }
-            // Auto-pause anything else running.
             return a.runningSince != null ? stopActivity(a, now) : a;
           });
           return { ...s, activities };
-        }),
+        });
+      },
       pauseActivity: (id) =>
         setState((s) => ({
           ...s,
           activities: s.activities.map((a) => (a.id === id ? stopActivity(a) : a)),
         })),
-      resetActivity: (id) =>
+      resetActivity: (id) => {
+        chimedRef.current.delete(id);
         setState((s) => ({
           ...s,
           activities: s.activities.map((a) =>
             a.id === id ? { ...a, elapsedMs: 0, runningSince: null } : a,
           ),
-        })),
+        }));
+      },
       toggleComplete: (id) =>
         setState((s) => ({
           ...s,
@@ -143,8 +183,10 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
               : a,
           ),
         })),
-      deleteActivity: (id) =>
-        setState((s) => ({ ...s, activities: s.activities.filter((a) => a.id !== id) })),
+      deleteActivity: (id) => {
+        chimedRef.current.delete(id);
+        setState((s) => ({ ...s, activities: s.activities.filter((a) => a.id !== id) }));
+      },
       applyTemplates: () =>
         setState((s) => {
           const existingNames = new Set(s.activities.map((a) => a.name.toLowerCase()));
@@ -189,7 +231,11 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         setState((s) => ({ ...s, templates: s.templates.filter((t) => t.id !== id) })),
       setTheme: (theme) => setState((s) => ({ ...s, theme })),
       setAutoApply: (v) => setState((s) => ({ ...s, autoApplyTemplates: v })),
-      clearAll: () => setState(defaultState()),
+      setSoundEnabled: (v) => setState((s) => ({ ...s, soundEnabled: v })),
+      clearAll: () => {
+        chimedRef.current.clear();
+        setState(defaultState());
+      },
     }),
     [state],
   );

@@ -28,6 +28,7 @@ export function EfficiencyRing({
           fill="none"
           stroke="var(--muted)"
           strokeWidth={stroke}
+          opacity={0.5}
         />
         <circle
           cx={size / 2}
