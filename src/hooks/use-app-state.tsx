@@ -23,7 +23,8 @@ type Ctx = {
   toggleComplete: (id: string) => void;
   renameActivity: (id: string, name: string, minutes: number) => void;
   deleteActivity: (id: string) => void;
-  applyTemplates: () => void;
+  /** Returns { added, skipped } so UI can give precise feedback. */
+  applyTemplates: () => { added: number; skipped: number };
   // templates
   addTemplate: (name: string, minutes: number) => void;
   updateTemplate: (id: string, name: string, minutes: number) => void;
@@ -187,21 +188,32 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         chimedRef.current.delete(id);
         setState((s) => ({ ...s, activities: s.activities.filter((a) => a.id !== id) }));
       },
-      applyTemplates: () =>
+      applyTemplates: () => {
+        let added = 0;
+        let skipped = 0;
         setState((s) => {
           const existingNames = new Set(s.activities.map((a) => a.name.toLowerCase()));
-          const additions: Activity[] = s.templates
-            .filter((t) => !existingNames.has(t.name.toLowerCase()))
-            .map((t) => ({
+          const additions: Activity[] = [];
+          for (const t of s.templates) {
+            if (existingNames.has(t.name.toLowerCase())) {
+              skipped++;
+              continue;
+            }
+            additions.push({
               id: uid(),
               name: t.name,
               allocatedMs: t.allocatedMs,
               elapsedMs: 0,
               runningSince: null,
               completed: false,
-            }));
+            });
+            added++;
+          }
+          if (additions.length === 0) return s;
           return { ...s, activities: [...s.activities, ...additions] };
-        }),
+        });
+        return { added, skipped };
+      },
       addTemplate: (name, minutes) =>
         setState((s) => ({
           ...s,
