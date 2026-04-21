@@ -1,6 +1,18 @@
 import * as React from "react";
 import { Pause, Play, RotateCcw, Check, Trash2, ChevronDown, MoreHorizontal } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useAppState } from "@/hooks/use-app-state";
 import { type Activity, formatHMS, formatMin, liveElapsed } from "@/lib/storage";
 import { cn } from "@/lib/utils";
