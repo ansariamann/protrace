@@ -23,7 +23,8 @@ type Ctx = {
   toggleComplete: (id: string) => void;
   renameActivity: (id: string, name: string, minutes: number) => void;
   deleteActivity: (id: string) => void;
-  applyTemplates: () => void;
+  /** Returns { added, skipped } so UI can give precise feedback. */
+  applyTemplates: () => { added: number; skipped: number };
   // templates
   addTemplate: (name: string, minutes: number) => void;
   updateTemplate: (id: string, name: string, minutes: number) => void;
