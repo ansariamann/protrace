@@ -142,31 +142,66 @@ export function ActivityCard({ activity, now }: Props) {
         </button>
       </div>
 
-      {expanded && (
-        <div className="mt-3 flex flex-wrap gap-2 border-t border-border pt-3 animate-slide-up">
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() => toggleComplete(activity.id)}
+      <AnimatePresence initial={false}>
+        {expanded && (
+          <motion.div
+            key="actions"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
+            className="overflow-hidden"
           >
-            <Check className="h-4 w-4" />
-            {activity.completed ? "Reopen" : "Complete"}
-          </Button>
-          <Button size="sm" variant="ghost" onClick={() => resetActivity(activity.id)}>
-            <RotateCcw className="h-4 w-4" />
-            Reset
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="ml-auto text-destructive hover:bg-destructive/10 hover:text-destructive"
-            onClick={() => deleteActivity(activity.id)}
-          >
-            <Trash2 className="h-4 w-4" />
-            Delete
-          </Button>
-        </div>
-      )}
+            <div className="mt-3 flex flex-wrap gap-2 border-t border-border pt-3">
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => toggleComplete(activity.id)}
+              >
+                <Check className="h-4 w-4" />
+                {activity.completed ? "Reopen" : "Complete"}
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => resetActivity(activity.id)}>
+                <RotateCcw className="h-4 w-4" />
+                Reset
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="ml-auto text-destructive hover:bg-destructive/10 hover:text-destructive"
+                onClick={() => setConfirmDelete(true)}
+              >
+                <Trash2 className="h-4 w-4" />
+                Delete
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete "{activity.name}"?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Removes this activity from today. Time tracked so far is lost.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                deleteActivity(activity.id);
+                toast.success("Activity deleted");
+                setConfirmDelete(false);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
