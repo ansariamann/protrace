@@ -1,6 +1,7 @@
 import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Sparkles, ArrowRight, Hourglass } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { ActivityCard } from "@/components/ActivityCard";
@@ -98,7 +99,14 @@ function TodayPage() {
             <div className="lg:col-span-2">
               <EmptyState
                 hasTemplates={state.templates.length > 0}
-                onApplyTemplates={applyTemplates}
+                onApplyTemplates={() => {
+                  const { added } = applyTemplates();
+                  if (added > 0) {
+                    toast.success(`Loaded ${added} ${added === 1 ? "activity" : "activities"}`);
+                  } else {
+                    toast.error("No templates available");
+                  }
+                }}
               />
             </div>
           ) : (
