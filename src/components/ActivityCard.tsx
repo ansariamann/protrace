@@ -28,6 +28,7 @@ export function ActivityCard({ activity, now }: Props) {
     deleteActivity,
   } = useAppState();
   const [expanded, setExpanded] = React.useState(false);
+  const [confirmDelete, setConfirmDelete] = React.useState(false);
 
   const elapsed = liveElapsed(activity, now);
   const allocated = activity.allocatedMs;
