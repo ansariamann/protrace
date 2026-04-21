@@ -36,28 +36,46 @@ export const Route = createRootRoute({
         content:
           "width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover",
       },
-      { title: "Daily Activity Timer — Track your time, every day" },
+      { title: "Protrace — Daily Activity Timer" },
       {
         name: "description",
         content:
           "Plan your day, allocate time to activities, run a stopwatch for each, and review your last 5 days of efficiency.",
       },
-      { name: "theme-color", content: "#ffffff" },
-      { property: "og:title", content: "Daily Activity Timer — Track your time, every day" },
+      { name: "theme-color", content: "#1a1810" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "Protrace" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { property: "og:title", content: "Protrace — Daily Activity Timer" },
       {
         property: "og:description",
         content: "Track how efficiently you spend your day. Resets every day.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:title", content: "Daily Activity Timer — Track your time, every day" },
-      { name: "description", content: "Daily Focus Timer is a mobile app for tracking time spent on daily activities." },
-      { property: "og:description", content: "Daily Focus Timer is a mobile app for tracking time spent on daily activities." },
-      { name: "twitter:description", content: "Daily Focus Timer is a mobile app for tracking time spent on daily activities." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/32922448-981a-4c4e-9f32-1fb6c95d09ab/id-preview-4c4ab75a--20705ef1-0be6-4611-83c3-27e5997dec1c.lovable.app-1776668135002.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/32922448-981a-4c4e-9f32-1fb6c95d09ab/id-preview-4c4ab75a--20705ef1-0be6-4611-83c3-27e5997dec1c.lovable.app-1776668135002.png" },
+      { name: "twitter:title", content: "Protrace — Daily Activity Timer" },
+      { name: "twitter:description", content: "Track how efficiently you spend your day." },
     ],
-    links: [{ rel: "stylesheet", href: appCss }],
+    links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "apple-touch-icon", href: "/icon-192.png" },
+      { rel: "icon", type: "image/png", href: "/icon-512.png" },
+      {
+        rel: "preconnect",
+        href: "https://fonts.googleapis.com",
+      },
+      {
+        rel: "preconnect",
+        href: "https://fonts.gstatic.com",
+        crossOrigin: "anonymous",
+      },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap",
+      },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -66,11 +84,11 @@ export const Route = createRootRoute({
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <head>
         <HeadContent />
       </head>
-      <body>
+      <body style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
         {children}
         <Scripts />
       </body>
@@ -81,7 +99,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   return (
     <AppStateProvider>
-      <div className="mx-auto min-h-screen max-w-md bg-background pb-24">
+      <div className="min-h-screen bg-background pb-24 lg:pb-6 lg:pl-64">
         <Outlet />
       </div>
       <BottomNav />
