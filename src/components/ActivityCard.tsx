@@ -43,8 +43,8 @@ export function ActivityCard({ activity, now }: Props) {
   return (
     <div
       className={cn(
-        "group relative overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-all animate-slide-up",
-        running && "border-primary/40 ring-1 ring-primary/30",
+        "glass glass-hover group relative overflow-hidden rounded-2xl p-5 animate-slide-up",
+        running && "!border-primary/40 ring-1 ring-primary/30",
         activity.completed && "opacity-60",
       )}
     >
@@ -81,12 +81,12 @@ export function ActivityCard({ activity, now }: Props) {
           <div className="mt-2 flex items-baseline gap-3">
             <span
               className={cn(
-                "font-mono text-4xl font-bold tabular-nums tracking-tight transition-colors",
-                running && !finished && "text-primary",
-                finished && "text-primary",
-                over && "text-warning",
+                "numeral text-4xl font-bold transition-colors",
+                !running && !finished && !over && "numeral-hero",
+                running && !finished && "numeral-primary",
+                finished && !over && "numeral-primary",
+                over && "numeral-warning",
               )}
-              style={{ fontVariantNumeric: "tabular-nums" }}
             >
               {formatHMS(remaining)}
             </span>

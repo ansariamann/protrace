@@ -67,12 +67,12 @@ function TodayPage() {
           <Stat label="Used" value={formatMin(totalElapsed)} accent />
           <Stat label="Left" value={formatMin(totalRemaining)} />
         </div>
-        <div className="flex items-center justify-between rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-soft)] lg:px-6">
+        <div className="glass flex items-center justify-between rounded-2xl p-4 lg:px-6">
           <div>
             <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
               Efficiency
             </p>
-            <p className="mt-1 font-display text-3xl font-bold tracking-tight">
+            <p className="mt-1 numeral numeral-hero text-4xl font-bold">
               {pct}<span className="text-lg text-muted-foreground">%</span>
             </p>
             <p className="mt-0.5 text-[11px] text-muted-foreground">
@@ -128,13 +128,13 @@ function Stat({
   accent?: boolean;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-card/60 p-3">
+    <div className="glass rounded-xl p-3">
       <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
         {label}
       </p>
       <p
-        className={`mt-1 font-mono text-lg font-bold tabular-nums ${
-          accent ? "text-primary" : "text-foreground"
+        className={`mt-1 numeral text-xl font-bold ${
+          accent ? "numeral-primary" : "numeral-hero"
         }`}
       >
         {value}
