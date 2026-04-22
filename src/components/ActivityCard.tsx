@@ -16,6 +16,7 @@ import {
 import { useAppState } from "@/hooks/use-app-state";
 import { type Activity, formatHMS, formatMin, liveElapsed } from "@/lib/storage";
 import { cn } from "@/lib/utils";
+import { GlowBar } from "@/components/GlowBar";
 
 type Props = { activity: Activity; now: number };
 
@@ -114,17 +115,13 @@ export function ActivityCard({ activity, now }: Props) {
         </button>
       </div>
 
-      {/* Progress track — animated shimmer when running */}
-      <div className="relative mt-4 h-1.5 overflow-hidden rounded-full bg-muted">
-        <div
-          className={cn(
-            "h-full rounded-full transition-all duration-700 ease-out",
-            !running && !finished && "bg-foreground/40",
-            finished && !over && "bg-primary",
-            over && "bg-warning",
-            running && !finished && "shimmer-bar",
-          )}
-          style={{ width: `${pct}%` }}
+      {/* Glowing progress bar */}
+      <div className="relative mt-5">
+        <GlowBar
+          value={ratio}
+          tone={over ? "warning" : "primary"}
+          active={running && !finished}
+          height={16}
         />
       </div>
 
