@@ -341,3 +341,47 @@
 .glow-bar-fill--active {
   animation: glow-bar-pulse 2.2s ease-in-out infinite;
 }
+
+/* Premium numeral treatment for countdowns */
+.premium-numeral {
+  font-feature-settings: "tnum" 1, "ss01" 1, "cv11" 1, "lnum" 1;
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: -0.035em;
+  color: oklch(0.96 0.012 95);
+  background: linear-gradient(
+    180deg,
+    oklch(0.99 0.012 95) 0%,
+    oklch(0.88 0.014 95) 55%,
+    oklch(0.72 0.016 95) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 1px 0 oklch(0 0 0 / 0.35);
+  filter: drop-shadow(0 1px 1px oklch(0 0 0 / 0.4));
+}
+.premium-numeral.is-running,
+.premium-numeral.is-finished {
+  background: linear-gradient(
+    180deg,
+    oklch(0.98 0.2 118) 0%,
+    oklch(0.88 0.21 118) 50%,
+    oklch(0.72 0.19 115) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter: drop-shadow(0 0 14px oklch(0.88 0.21 118 / 0.55))
+    drop-shadow(0 1px 1px oklch(0 0 0 / 0.4));
+}
+.premium-numeral.is-over {
+  background: linear-gradient(
+    180deg,
+    oklch(0.95 0.18 70) 0%,
+    oklch(0.82 0.18 65) 55%,
+    oklch(0.68 0.2 55) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter: drop-shadow(0 0 14px oklch(0.82 0.18 65 / 0.55))
+    drop-shadow(0 1px 1px oklch(0 0 0 / 0.4));
+}
