@@ -6,7 +6,6 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ActivityCard } from "@/components/ActivityCard";
 import { EfficiencyRing } from "@/components/EfficiencyRing";
-import { FullscreenStopwatch } from "@/components/FullscreenStopwatch";
 import { useAppState, useTicker } from "@/hooks/use-app-state";
 import { formatMin, liveElapsed } from "@/lib/storage";
 
@@ -27,9 +26,6 @@ function TodayPage() {
   const { state, applyTemplates } = useAppState();
   const hasRunning = state.activities.some((a) => a.runningSince != null);
   const now = useTicker(1000, hasRunning);
-  const [focusId, setFocusId] = React.useState<string | null>(null);
-  const focusActivity =
-    focusId != null ? state.activities.find((a) => a.id === focusId) ?? null : null;
 
   const totalAllocated = state.activities.reduce((s, a) => s + a.allocatedMs, 0);
   const totalElapsed = state.activities.reduce((s, a) => s + liveElapsed(a, now), 0);
@@ -114,14 +110,10 @@ function TodayPage() {
               />
             </div>
           ) : (
-            state.activities.map((a) => (
-              <ActivityCard key={a.id} activity={a} now={now} onExpand={setFocusId} />
-            ))
+            state.activities.map((a) => <ActivityCard key={a.id} activity={a} now={now} />)
           )}
         </div>
       </section>
-
-      <FullscreenStopwatch activity={focusActivity} onClose={() => setFocusId(null)} />
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Pause, Play, RotateCcw, Check, Trash2, ChevronDown, MoreHorizontal, Maximize2 } from "lucide-react";
+import { Pause, Play, RotateCcw, Check, Trash2, ChevronDown, MoreHorizontal } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -18,9 +18,9 @@ import { type Activity, formatHMS, formatMin, liveElapsed } from "@/lib/storage"
 import { cn } from "@/lib/utils";
 import { GlowBar } from "@/components/GlowBar";
 
-type Props = { activity: Activity; now: number; onExpand?: (id: string) => void };
+type Props = { activity: Activity; now: number };
 
-export function ActivityCard({ activity, now, onExpand }: Props) {
+export function ActivityCard({ activity, now }: Props) {
   const {
     startActivity,
     pauseActivity,
@@ -97,34 +97,22 @@ export function ActivityCard({ activity, now, onExpand }: Props) {
           </p>
         </div>
 
-        <div className="flex shrink-0 flex-col items-center gap-2">
-          <button
-            onClick={() => (running ? pauseActivity(activity.id) : startActivity(activity.id))}
-            disabled={activity.completed}
-            aria-label={running ? "Pause" : "Start"}
-            style={{ backgroundImage: "var(--gradient-primary)" }}
-            className={cn(
-              "relative flex h-16 w-16 items-center justify-center rounded-full text-primary-foreground shadow-[var(--shadow-glow)] transition-all active:scale-90 disabled:opacity-30 disabled:shadow-none",
-              running && "animate-pulse-ring",
-            )}
-          >
-            {running ? (
-              <Pause className="h-7 w-7" fill="currentColor" />
-            ) : (
-              <Play className="h-7 w-7 translate-x-0.5" fill="currentColor" />
-            )}
-          </button>
-          {onExpand && (
-            <button
-              onClick={() => onExpand(activity.id)}
-              aria-label="Open fullscreen stopwatch"
-              className="flex h-8 w-16 items-center justify-center gap-1 rounded-full border border-border bg-card/60 text-[10px] font-bold uppercase tracking-wider text-muted-foreground transition-all hover:border-primary/50 hover:text-primary active:scale-95"
-            >
-              <Maximize2 className="h-3 w-3" />
-              Focus
-            </button>
+        <button
+          onClick={() => (running ? pauseActivity(activity.id) : startActivity(activity.id))}
+          disabled={activity.completed}
+          aria-label={running ? "Pause" : "Start"}
+          style={{ backgroundImage: "var(--gradient-primary)" }}
+          className={cn(
+            "relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full text-primary-foreground shadow-[var(--shadow-glow)] transition-all active:scale-90 disabled:opacity-30 disabled:shadow-none",
+            running && "animate-pulse-ring",
           )}
-        </div>
+        >
+          {running ? (
+            <Pause className="h-7 w-7" fill="currentColor" />
+          ) : (
+            <Play className="h-7 w-7 translate-x-0.5" fill="currentColor" />
+          )}
+        </button>
       </div>
 
       {/* Glowing progress bar */}
