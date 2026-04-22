@@ -78,22 +78,23 @@ export function ActivityCard({ activity, now }: Props) {
           </div>
 
           {/* Big countdown */}
-          <div className="mt-2 flex items-baseline gap-3">
+          <div className="mt-3 flex items-baseline gap-2.5">
             <span
               className={cn(
-                "font-mono text-4xl font-bold tabular-nums tracking-tight transition-colors",
-                running && !finished && "text-primary",
-                finished && "text-primary",
-                over && "text-warning",
+                "premium-numeral font-display text-5xl font-semibold tabular-nums leading-none transition-all",
+                running && !finished && "is-running",
+                finished && "is-finished",
+                over && "is-over",
               )}
-              style={{ fontVariantNumeric: "tabular-nums" }}
             >
               {formatHMS(remaining)}
             </span>
-            <span className="text-xs text-muted-foreground">left</span>
+            <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+              left
+            </span>
           </div>
-          <p className="mt-0.5 text-[11px] text-muted-foreground">
-            {formatMin(elapsed)} of {formatMin(allocated)} used
+          <p className="mt-1.5 font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+            {formatMin(elapsed)} <span className="opacity-40">/</span> {formatMin(allocated)}
           </p>
         </div>
 
