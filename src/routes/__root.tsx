@@ -1,9 +1,11 @@
+import * as React from "react";
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
 import { AppStateProvider } from "@/hooks/use-app-state";
 import { BottomNav } from "@/components/BottomNav";
 import { Toaster } from "@/components/ui/sonner";
+import { installAudioUnlocker } from "@/lib/sound";
 
 function NotFoundComponent() {
   return (
@@ -97,6 +99,9 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
+  React.useEffect(() => {
+    installAudioUnlocker();
+  }, []);
   return (
     <AppStateProvider>
       <div className="min-h-screen bg-background pb-24 lg:pb-6 lg:pl-64">
