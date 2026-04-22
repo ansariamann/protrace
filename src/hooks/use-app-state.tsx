@@ -81,39 +81,43 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     return () => clearInterval(id);
   }, [hydrated]);
 
+  // Keep latest state in a ref so the watcher interval doesn't tear down on every change.
+  const stateRef = React.useRef(state);
+  React.useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
+
+  const hasRunning = state.activities.some((a) => a.runningSince != null);
+
   // Watch for any running activity hitting its allocation → chime + auto-pause.
   React.useEffect(() => {
-    if (!hydrated) return;
-    const hasRunning = state.activities.some((a) => a.runningSince != null);
-    if (!hasRunning) return;
+    if (!hydrated || !hasRunning) return;
 
     const tick = () => {
+      const s = stateRef.current;
       const now = Date.now();
-      let triggered: string | null = null;
-      for (const a of state.activities) {
+      const triggered: string[] = [];
+      for (const a of s.activities) {
         if (a.runningSince == null || a.completed) continue;
         if (chimedRef.current.has(a.id)) continue;
         if (liveElapsed(a, now) >= a.allocatedMs) {
-          triggered = a.id;
-          break;
+          triggered.push(a.id);
         }
       }
-      if (triggered) {
-        chimedRef.current.add(triggered);
-        if (state.soundEnabled) playCompletionChime();
-        // Auto-pause the finished one (still let user see "complete" state).
-        setState((s) => ({
-          ...s,
-          activities: s.activities.map((a) =>
-            a.id === triggered ? stopActivity(a) : a,
-          ),
-        }));
-      }
+      if (triggered.length === 0) return;
+      for (const id of triggered) chimedRef.current.add(id);
+      if (s.soundEnabled) playCompletionChime();
+      setState((curr) => ({
+        ...curr,
+        activities: curr.activities.map((a) =>
+          triggered.includes(a.id) ? stopActivity(a) : a,
+        ),
+      }));
     };
 
-    const id = setInterval(tick, 250);
+    const id = setInterval(tick, 500);
     return () => clearInterval(id);
-  }, [state.activities, state.soundEnabled, hydrated]);
+  }, [hydrated, hasRunning]);
 
   const value = React.useMemo<Ctx>(
     () => ({
