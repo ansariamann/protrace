@@ -34,20 +34,38 @@ function tone(freq: number, start: number, dur: number, gain = 0.25) {
   osc.stop(t0 + dur + 0.05);
 }
 
-/** Pleasant 4-note completion chime + light vibration on mobile. */
+/** ~6s completion chime — ascending arpeggio + sustained resolve. */
 export function playCompletionChime() {
   const c = getCtx();
   if (!c) return;
   if (c.state === "suspended") c.resume().catch(() => {});
-  // C5, E5, G5, C6 — bright ascending arpeggio
-  tone(523.25, 0, 0.35);
-  tone(659.25, 0.14, 0.35);
-  tone(783.99, 0.28, 0.45);
-  tone(1046.5, 0.42, 0.7, 0.3);
+
+  // Phase 1 (0.0–1.2s): bright ascending arpeggio C5 E5 G5 C6
+  tone(523.25, 0.0, 0.45, 0.28);
+  tone(659.25, 0.25, 0.45, 0.28);
+  tone(783.99, 0.5, 0.5, 0.28);
+  tone(1046.5, 0.8, 0.6, 0.3);
+
+  // Phase 2 (1.4–3.2s): gentle repeat, softer
+  tone(659.25, 1.5, 0.5, 0.2);
+  tone(783.99, 1.8, 0.5, 0.2);
+  tone(1046.5, 2.1, 0.7, 0.22);
+
+  // Phase 3 (3.4–6.0s): sustained resolve chord C5 + G5 + C6
+  tone(523.25, 3.6, 2.4, 0.18);
+  tone(783.99, 3.6, 2.4, 0.16);
+  tone(1046.5, 3.7, 2.3, 0.18);
+  // Final sparkle
+  tone(1318.51, 5.0, 0.9, 0.16);
 
   if (typeof navigator !== "undefined" && "vibrate" in navigator) {
     try {
-      navigator.vibrate?.([80, 60, 80, 60, 160]);
+      // ~6s vibration pattern
+      navigator.vibrate?.([
+        200, 120, 200, 120, 200, 400,
+        150, 100, 150, 100, 300, 500,
+        400, 200, 600,
+      ]);
     } catch {
       /* ignore */
     }

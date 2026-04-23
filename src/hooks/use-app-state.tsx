@@ -10,8 +10,14 @@ import {
   stopActivity,
   liveElapsed,
   uid,
+  formatHMS,
 } from "@/lib/storage";
 import { playCompletionChime, unlockAudio } from "@/lib/sound";
+import {
+  requestNotificationPermission,
+  showTimerNotification,
+  clearTimerNotification,
+} from "@/lib/notify";
 
 type Ctx = {
   state: AppState;
@@ -90,23 +96,49 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const hasRunning = state.activities.some((a) => a.runningSince != null);
 
   // Watch for any running activity hitting its allocation → chime + auto-pause.
+  // Also pushes live notification updates while tab is hidden.
   React.useEffect(() => {
-    if (!hydrated || !hasRunning) return;
+    if (!hydrated || !hasRunning) {
+      clearTimerNotification();
+      return;
+    }
 
     const tick = () => {
       const s = stateRef.current;
       const now = Date.now();
       const triggered: string[] = [];
+      let liveRunning: { id: string; name: string; remaining: number; elapsed: number; allocated: number } | null = null;
+
       for (const a of s.activities) {
         if (a.runningSince == null || a.completed) continue;
-        if (chimedRef.current.has(a.id)) continue;
-        if (liveElapsed(a, now) >= a.allocatedMs) {
-          triggered.push(a.id);
+        const elapsed = (a.elapsedMs ?? 0) + (now - a.runningSince);
+        if (!liveRunning) {
+          liveRunning = {
+            id: a.id,
+            name: a.name,
+            remaining: Math.max(0, a.allocatedMs - elapsed),
+            elapsed,
+            allocated: a.allocatedMs,
+          };
         }
+        if (chimedRef.current.has(a.id)) continue;
+        if (elapsed >= a.allocatedMs) triggered.push(a.id);
       }
+
+      // Push live notification for the first running activity
+      if (liveRunning) {
+        const pct = Math.min(100, Math.round((liveRunning.elapsed / liveRunning.allocated) * 100));
+        showTimerNotification({
+          tag: `protrace-timer-${liveRunning.id}`,
+          title: `⏱ ${liveRunning.name} · ${formatHMS(liveRunning.remaining)} left`,
+          body: `${pct}% used — tap to open Protrace`,
+        });
+      }
+
       if (triggered.length === 0) return;
       for (const id of triggered) chimedRef.current.add(id);
       if (s.soundEnabled) playCompletionChime();
+      clearTimerNotification();
       setState((curr) => ({
         ...curr,
         activities: curr.activities.map((a) =>
@@ -115,7 +147,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       }));
     };
 
-    const id = setInterval(tick, 500);
+    tick();
+    const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, [hydrated, hasRunning]);
 
@@ -139,6 +172,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         })),
       startActivity: (id) => {
         unlockAudio();
+        void requestNotificationPermission();
         chimedRef.current.delete(id);
         setState((s) => {
           const now = Date.now();
