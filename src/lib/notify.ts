@@ -37,12 +37,6 @@ export function showTimerNotification(opts: {
   body: string;
 }) {
   if (!notificationsGranted()) return;
-  // Skip when tab is visible — avoid redundant banners.
-  if (typeof document !== "undefined" && document.visibilityState === "visible") {
-    // Still cache tag so we can close it when tab is hidden later.
-    activeTag = opts.tag;
-    return;
-  }
   if (opts.body === lastBody && activeTag === opts.tag) return;
   try {
     const n = new Notification(opts.title, {
@@ -53,7 +47,6 @@ export function showTimerNotification(opts: {
       badge: "/icon-192.png",
       icon: "/icon-192.png",
     });
-    // Auto-close previous when a new one takes its place via tag — safe no-op.
     n.onclick = () => {
       try {
         window.focus();
