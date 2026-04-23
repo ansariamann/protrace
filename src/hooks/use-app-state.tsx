@@ -172,6 +172,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         })),
       startActivity: (id) => {
         unlockAudio();
+        void requestNotificationPermission();
         chimedRef.current.delete(id);
         setState((s) => {
           const now = Date.now();
