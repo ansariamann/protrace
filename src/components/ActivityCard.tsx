@@ -48,16 +48,7 @@ export function ActivityCard({ activity, now }: Props) {
         activity.completed && "opacity-60",
       )}
     >
-      {/* Subtle gradient halo when running */}
-      {running && (
-        <div
-          className="pointer-events-none absolute -inset-px rounded-2xl opacity-30"
-          style={{
-            background:
-              "radial-gradient(ellipse at top right, var(--primary) 0%, transparent 60%)",
-          }}
-        />
-      )}
+      {/* Subtle ring indicator when running — no background tint */}
 
       <div className="relative flex items-start gap-4">
         <div className="min-w-0 flex-1">
