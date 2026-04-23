@@ -173,7 +173,16 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         })),
       startActivity: (id) => {
         unlockAudio();
-        void requestNotificationPermission();
+        // Ask for notification permission on the user gesture.
+        void requestNotificationPermission().then((p) => {
+          if (p === "unsupported") {
+            toast.info("Notifications aren't supported in this browser");
+          } else if (p === "denied") {
+            toast.error("Notifications blocked — enable them in browser settings");
+          } else if (p === "granted") {
+            toast.success("Timer running — check your notifications");
+          }
+        });
         chimedRef.current.delete(id);
         setState((s) => {
           const now = Date.now();
