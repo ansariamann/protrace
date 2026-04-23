@@ -79,109 +79,131 @@
   --grain: oklch(1 0 0 / 0.015);
 }
 
-/* Light mode = pure black & white, editorial and high-contrast */
+/* Light mode — warm editorial: cream paper, cocoa ink, terracotta accent.
+   Inspired by letterpress & Italian magazine design. */
 .light {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.15 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.15 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.15 0 0);
-  /* Primary = ink black */
-  --primary: oklch(0.15 0 0);
-  --primary-foreground: oklch(1 0 0);
-  --primary-glow: oklch(0.3 0 0);
-  --secondary: oklch(0.96 0 0);
-  --secondary-foreground: oklch(0.15 0 0);
-  --muted: oklch(0.96 0 0);
-  --muted-foreground: oklch(0.42 0 0);
-  --accent: oklch(0.94 0 0);
-  --accent-foreground: oklch(0.15 0 0);
-  --destructive: oklch(0.5 0.22 27);
-  --destructive-foreground: oklch(1 0 0);
-  --success: oklch(0.15 0 0);
-  --success-foreground: oklch(1 0 0);
-  --warning: oklch(0.15 0 0);
-  --warning-foreground: oklch(1 0 0);
-  --border: oklch(0.15 0 0 / 14%);
-  --input: oklch(0.15 0 0 / 10%);
-  --ring: oklch(0.15 0 0);
+  --background: oklch(0.975 0.012 75);
+  --foreground: oklch(0.22 0.03 50);
+  --card: oklch(0.995 0.006 80);
+  --card-foreground: oklch(0.22 0.03 50);
+  --popover: oklch(0.995 0.006 80);
+  --popover-foreground: oklch(0.22 0.03 50);
+  --primary: oklch(0.58 0.16 40);
+  --primary-foreground: oklch(0.985 0.01 75);
+  --primary-glow: oklch(0.68 0.17 45);
+  --secondary: oklch(0.94 0.015 75);
+  --secondary-foreground: oklch(0.22 0.03 50);
+  --muted: oklch(0.93 0.014 75);
+  --muted-foreground: oklch(0.48 0.025 55);
+  --accent: oklch(0.9 0.03 70);
+  --accent-foreground: oklch(0.22 0.03 50);
+  --destructive: oklch(0.55 0.2 27);
+  --destructive-foreground: oklch(0.99 0.006 80);
+  --success: oklch(0.56 0.13 150);
+  --success-foreground: oklch(0.99 0.006 80);
+  --warning: oklch(0.7 0.15 70);
+  --warning-foreground: oklch(0.22 0.03 50);
+  --border: oklch(0.22 0.03 50 / 12%);
+  --input: oklch(0.22 0.03 50 / 10%);
+  --ring: oklch(0.58 0.16 40);
 
-  --gradient-primary: linear-gradient(135deg, oklch(0.18 0 0), oklch(0.3 0 0));
-  --gradient-warm: linear-gradient(135deg, oklch(0.22 0 0), oklch(0.35 0 0));
-  --gradient-ink: linear-gradient(180deg, oklch(1 0 0) 0%, oklch(0.97 0 0) 100%);
-  --shadow-soft: 0 1px 2px oklch(0 0 0 / 0.06), 0 4px 16px oklch(0 0 0 / 0.08);
-  --shadow-card: 0 2px 8px oklch(0 0 0 / 0.06), 0 12px 40px oklch(0 0 0 / 0.1);
-  --shadow-glow: 0 0 0 2px oklch(0.15 0 0 / 0.12), 0 8px 32px oklch(0 0 0 / 0.15);
+  --gradient-primary: linear-gradient(135deg, oklch(0.62 0.17 45), oklch(0.54 0.16 30));
+  --gradient-warm: linear-gradient(135deg, oklch(0.72 0.16 65), oklch(0.58 0.18 40));
+  --gradient-ink: linear-gradient(180deg, oklch(0.99 0.008 80) 0%, oklch(0.96 0.012 75) 100%);
+  --shadow-soft:
+    0 1px 2px oklch(0.3 0.05 40 / 0.08),
+    0 4px 16px oklch(0.3 0.05 40 / 0.08);
+  --shadow-card:
+    0 2px 8px oklch(0.3 0.05 40 / 0.08),
+    0 16px 48px oklch(0.3 0.05 40 / 0.12);
+  --shadow-glow:
+    0 0 32px oklch(0.62 0.17 45 / 0.35),
+    0 8px 24px oklch(0.54 0.16 30 / 0.25);
 
-  --grain: oklch(0 0 0 / 0.015);
+  --grain: oklch(0.22 0.03 50 / 0.02);
 }
 
-/* Light-mode body: flat paper, no colored washes */
+/* Light-mode body: warm paper with subtle sunlit wash */
 .light body {
-  background-image: none;
+  background-image:
+    radial-gradient(circle at 0% 0%, oklch(0.68 0.17 45 / 0.08) 0%, transparent 45%),
+    radial-gradient(circle at 100% 100%, oklch(0.72 0.16 65 / 0.06) 0%, transparent 45%);
 }
 
-/* Light-mode numerals:
-   - Idle (not started): use the dark-theme cream gradient look (per user request)
-   - Running/finished/over: solid ink, no glow */
-.light .premium-numeral {
-  color: oklch(0.96 0.012 95);
+/* Light-mode numerals — ALWAYS the same treatment regardless of running state.
+   Deep cocoa gradient, warm & editorial. */
+.light .premium-numeral,
+.light .premium-numeral.is-running,
+.light .premium-numeral.is-finished,
+.light .premium-numeral.is-over {
+  color: oklch(0.22 0.03 50);
   background: linear-gradient(
     180deg,
-    oklch(0.55 0.014 95) 0%,
-    oklch(0.4 0.014 95) 55%,
-    oklch(0.25 0.016 95) 100%
+    oklch(0.32 0.04 50) 0%,
+    oklch(0.22 0.035 50) 55%,
+    oklch(0.14 0.025 45) 100%
   );
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  text-shadow: 0 1px 0 oklch(1 0 0 / 0.4);
-  filter: none;
-}
-.light .premium-numeral.is-running,
-.light .premium-numeral.is-finished,
-.light .premium-numeral.is-over {
-  background: linear-gradient(
-    180deg,
-    oklch(0.25 0 0) 0%,
-    oklch(0.12 0 0) 55%,
-    oklch(0.05 0 0) 100%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  text-shadow: none;
+  text-shadow: 0 1px 0 oklch(1 0 0 / 0.5);
   filter: none;
 }
 
-/* Light-mode glow bar: solid ink fill, no neon */
-.light .glow-bar-fill,
+/* Light-mode glow bar — warm terracotta fill, soft bloom */
+.light .glow-bar-fill {
+  background: linear-gradient(
+    180deg,
+    oklch(0.78 0.15 55) 0%,
+    oklch(0.64 0.17 42) 50%,
+    oklch(0.5 0.16 32) 100%
+  );
+  box-shadow:
+    0 0 0 1px oklch(0.5 0.16 32 / 0.35) inset,
+    0 1px 2px oklch(0.3 0.05 40 / 0.15),
+    0 0 12px oklch(0.62 0.17 45 / 0.25);
+}
 .light .glow-bar-fill[data-tone="warning"] {
   background: linear-gradient(
     180deg,
-    oklch(0.3 0 0) 0%,
-    oklch(0.18 0 0) 50%,
-    oklch(0.1 0 0) 100%
+    oklch(0.8 0.17 75) 0%,
+    oklch(0.68 0.19 55) 50%,
+    oklch(0.54 0.2 38) 100%
   );
   box-shadow:
-    0 0 0 1px oklch(0 0 0 / 0.2) inset,
-    0 1px 2px oklch(0 0 0 / 0.15);
+    0 0 0 1px oklch(0.54 0.2 38 / 0.35) inset,
+    0 1px 2px oklch(0.3 0.05 40 / 0.15),
+    0 0 12px oklch(0.72 0.18 60 / 0.3);
 }
-.light .glow-bar-bloom,
-.light .glow-bar-bloom[data-warn],
+.light .glow-bar-bloom {
+  background: radial-gradient(
+    ellipse at center,
+    oklch(0.62 0.17 45 / 0.25) 0%,
+    oklch(0.62 0.17 45 / 0.08) 35%,
+    transparent 70%
+  );
+}
+.light .glow-bar-bloom[data-warn] {
+  background: radial-gradient(
+    ellipse at center,
+    oklch(0.7 0.18 60 / 0.28) 0%,
+    oklch(0.7 0.18 60 / 0.08) 35%,
+    transparent 70%
+  );
+}
 .light .glow-bar-sheen,
 .light .glow-bar-bubbles,
 .light .glow-bar-tip {
   display: none;
 }
 .light .glow-bar-track {
-  background: oklch(0.94 0 0);
+  background: oklch(0.9 0.018 70);
   box-shadow:
-    inset 0 1px 2px oklch(0 0 0 / 0.08),
-    0 0 0 1px oklch(0 0 0 / 0.06);
+    inset 0 1px 2px oklch(0.3 0.05 40 / 0.12),
+    0 0 0 1px oklch(0.3 0.05 40 / 0.06);
 }
 
-/* Light-mode pulse ring: grayscale */
+/* Light-mode pulse ring — warm terracotta */
 .light .animate-pulse-ring {
   animation: pulse-ring-light 1.8s ease-out infinite;
 }
