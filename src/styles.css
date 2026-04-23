@@ -460,28 +460,10 @@
   text-shadow: 0 1px 0 oklch(0 0 0 / 0.35);
   filter: drop-shadow(0 1px 1px oklch(0 0 0 / 0.4));
 }
+/* Numeral color stays constant regardless of running/finished/over state.
+   Only the progress bar + pulse ring signal timer state. */
 .premium-numeral.is-running,
-.premium-numeral.is-finished {
-  background: linear-gradient(
-    180deg,
-    oklch(0.98 0.2 118) 0%,
-    oklch(0.88 0.21 118) 50%,
-    oklch(0.72 0.19 115) 100%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  filter: drop-shadow(0 0 14px oklch(0.88 0.21 118 / 0.55))
-    drop-shadow(0 1px 1px oklch(0 0 0 / 0.4));
-}
+.premium-numeral.is-finished,
 .premium-numeral.is-over {
-  background: linear-gradient(
-    180deg,
-    oklch(0.95 0.18 70) 0%,
-    oklch(0.82 0.18 65) 55%,
-    oklch(0.68 0.2 55) 100%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  filter: drop-shadow(0 0 14px oklch(0.82 0.18 65 / 0.55))
-    drop-shadow(0 1px 1px oklch(0 0 0 / 0.4));
+  /* no overrides — inherit the idle treatment */
 }
