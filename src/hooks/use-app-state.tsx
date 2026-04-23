@@ -10,6 +10,7 @@ import {
   stopActivity,
   liveElapsed,
   uid,
+  formatHMS,
 } from "@/lib/storage";
 import { playCompletionChime, unlockAudio } from "@/lib/sound";
 import {
