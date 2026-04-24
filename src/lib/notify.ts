@@ -64,7 +64,6 @@ export async function showTimerNotification(opts: {
         body: opts.body,
         tag: opts.tag,
         silent: true,
-        renotify: false,
         requireInteraction: true,
         badge: "/icon-192.png",
         icon: "/icon-192.png",
