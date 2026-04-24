@@ -67,7 +67,6 @@ export async function showTimerNotification(opts: {
         requireInteraction: true,
         badge: "/icon-192.png",
         icon: "/icon-192.png",
-        timestamp: Date.now(),
         data: { url: "/" },
       });
     } else {
