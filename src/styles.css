@@ -206,13 +206,18 @@
   animation: pulse-ring-light 1.8s ease-out infinite;
 }
 @keyframes pulse-ring-light {
-  0%, 100% { box-shadow: 0 0 0 0 oklch(0.58 0.16 40 / 0.45); }
-  50% { box-shadow: 0 0 0 16px oklch(0.58 0.16 40 / 0); }
+  0%, 100% { box-shadow: 0 0 0 0 oklch(0.17 0.004 95 / 0.28); }
+  50% { box-shadow: 0 0 0 16px oklch(0.17 0.004 95 / 0); }
 }
 
 @layer base {
   * {
     border-color: var(--color-border);
+  }
+
+  *:not(input):not(textarea):not([contenteditable="true"]) {
+    -webkit-user-select: none;
+    user-select: none;
   }
 
   html,
@@ -234,6 +239,13 @@
   h1, h2, h3 {
     font-family: var(--font-display);
     letter-spacing: -0.02em;
+  }
+
+  input,
+  textarea,
+  [contenteditable="true"] {
+    -webkit-user-select: text;
+    user-select: text;
   }
 }
 
