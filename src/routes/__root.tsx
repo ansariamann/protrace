@@ -6,6 +6,7 @@ import { AppStateProvider } from "@/hooks/use-app-state";
 import { BottomNav } from "@/components/BottomNav";
 import { Toaster } from "@/components/ui/sonner";
 import { installAudioUnlocker } from "@/lib/sound";
+import { registerNotificationServiceWorker } from "@/lib/notify";
 
 function NotFoundComponent() {
   return (
@@ -101,6 +102,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   React.useEffect(() => {
     installAudioUnlocker();
+    void registerNotificationServiceWorker();
   }, []);
   return (
     <AppStateProvider>

@@ -6,13 +6,30 @@
 let permission: NotificationPermission | "unsupported" = "unsupported";
 let activeTag: string | null = null;
 let lastBody = "";
+let registrationPromise: Promise<ServiceWorkerRegistration | null> | null = null;
 
 function supported(): boolean {
   return typeof window !== "undefined" && "Notification" in window;
 }
 
+function serviceWorkersSupported(): boolean {
+  return typeof navigator !== "undefined" && "serviceWorker" in navigator;
+}
+
+export async function registerNotificationServiceWorker(): Promise<ServiceWorkerRegistration | null> {
+  if (!serviceWorkersSupported()) return null;
+  if (!registrationPromise) {
+    registrationPromise = navigator.serviceWorker
+      .register("/sw.js", { scope: "/" })
+      .then(() => navigator.serviceWorker.ready)
+      .catch(() => null);
+  }
+  return registrationPromise;
+}
+
 export async function requestNotificationPermission(): Promise<NotificationPermission | "unsupported"> {
   if (!supported()) return "unsupported";
+  void registerNotificationServiceWorker();
   if (Notification.permission === "granted" || Notification.permission === "denied") {
     permission = Notification.permission;
     return permission;
@@ -31,30 +48,46 @@ export function notificationsGranted(): boolean {
 }
 
 /** Show / update a live timer notification. Silent updates (no sound/vibrate). */
-export function showTimerNotification(opts: {
+export async function showTimerNotification(opts: {
   tag: string;
   title: string;
   body: string;
 }) {
   if (!notificationsGranted()) return;
   if (opts.body === lastBody && activeTag === opts.tag) return;
+
   try {
-    const n = new Notification(opts.title, {
-      body: opts.body,
-      tag: opts.tag,
-      silent: true,
-      requireInteraction: false,
-      badge: "/icon-192.png",
-      icon: "/icon-192.png",
-    });
-    n.onclick = () => {
-      try {
-        window.focus();
-      } catch {
-        /* ignore */
-      }
-      n.close();
-    };
+    const registration = await registerNotificationServiceWorker();
+
+    if (registration) {
+      await registration.showNotification(opts.title, {
+        body: opts.body,
+        tag: opts.tag,
+        silent: true,
+        requireInteraction: true,
+        badge: "/icon-192.png",
+        icon: "/icon-192.png",
+        data: { url: "/" },
+      });
+    } else {
+      const n = new Notification(opts.title, {
+        body: opts.body,
+        tag: opts.tag,
+        silent: true,
+        requireInteraction: false,
+        badge: "/icon-192.png",
+        icon: "/icon-192.png",
+      });
+      n.onclick = () => {
+        try {
+          window.focus();
+        } catch {
+          /* ignore */
+        }
+        n.close();
+      };
+    }
+
     activeTag = opts.tag;
     lastBody = opts.body;
   } catch {
@@ -62,7 +95,20 @@ export function showTimerNotification(opts: {
   }
 }
 
-export function clearTimerNotification() {
+export async function clearTimerNotification() {
+  const currentTag = activeTag;
   activeTag = null;
   lastBody = "";
+
+  try {
+    const registration = await registerNotificationServiceWorker();
+    const notifications = registration ? await registration.getNotifications() : [];
+    for (const notification of notifications) {
+      if (!currentTag || notification.tag === currentTag || notification.tag.startsWith("protrace-timer-")) {
+        notification.close();
+      }
+    }
+  } catch {
+    /* ignore */
+  }
 }

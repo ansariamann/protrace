@@ -100,7 +100,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   // Also pushes live notification updates while tab is hidden.
   React.useEffect(() => {
     if (!hydrated || !hasRunning) {
-      clearTimerNotification();
+      void clearTimerNotification();
       return;
     }
 
@@ -127,9 +127,9 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Push live notification for the first running activity
-      if (liveRunning) {
+        if (liveRunning) {
         const pct = Math.min(100, Math.round((liveRunning.elapsed / liveRunning.allocated) * 100));
-        showTimerNotification({
+          void showTimerNotification({
           tag: `protrace-timer-${liveRunning.id}`,
           title: `⏱ ${liveRunning.name} · ${formatHMS(liveRunning.remaining)} left`,
           body: `${pct}% used — tap to open Protrace`,
@@ -139,7 +139,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       if (triggered.length === 0) return;
       for (const id of triggered) chimedRef.current.add(id);
       if (s.soundEnabled) playCompletionChime();
-      clearTimerNotification();
+      void clearTimerNotification();
       setState((curr) => ({
         ...curr,
         activities: curr.activities.map((a) =>
@@ -180,7 +180,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           } else if (p === "denied") {
             toast.error("Notifications blocked — enable them in browser settings");
           } else if (p === "granted") {
-            toast.success("Timer running — check your notifications");
+            toast.success("Timer running — mobile notification is enabled");
           }
         });
         chimedRef.current.delete(id);
