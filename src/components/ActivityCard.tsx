@@ -108,7 +108,7 @@ export function ActivityCard({ activity, now }: Props) {
       </div>
 
       {/* Glowing progress bar */}
-      <div className="relative mt-5">
+      <div className="relative mt-5 px-1 py-2">
         <GlowBar
           value={ratio}
           tone={over ? "warning" : "primary"}
@@ -117,7 +117,7 @@ export function ActivityCard({ activity, now }: Props) {
         />
       </div>
 
-      <div className="mt-2 flex items-center justify-between text-[10px] uppercase tracking-wider text-muted-foreground">
+      <div className="mt-3 flex items-center justify-between text-[10px] uppercase tracking-wider text-muted-foreground">
         <span>{Math.round(pct)}%</span>
         <button
           onClick={() => setExpanded((v) => !v)}
