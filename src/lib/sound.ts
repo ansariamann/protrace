@@ -1,6 +1,8 @@
 // Tiny WebAudio chime — no external assets needed.
 let ctx: AudioContext | null = null;
 let unlocked = false;
+// Track active oscillators so we can stop them on demand.
+const activeOscillators: OscillatorNode[] = [];
 
 function getCtx(): AudioContext | null {
   if (typeof window === "undefined") return null;
@@ -32,10 +34,38 @@ function tone(freq: number, start: number, dur: number, gain = 0.25) {
   osc.connect(g).connect(c.destination);
   osc.start(t0);
   osc.stop(t0 + dur + 0.05);
+  activeOscillators.push(osc);
+  osc.onended = () => {
+    const i = activeOscillators.indexOf(osc);
+    if (i !== -1) activeOscillators.splice(i, 1);
+  };
 }
 
-/** ~6s completion chime — ascending arpeggio + sustained resolve. */
-export function playCompletionChime() {
+// Track the timeout that schedules the next loop cycle.
+let loopTimeout: ReturnType<typeof setTimeout> | null = null;
+// Whether the chime is currently supposed to be looping.
+let chimeLooping = false;
+
+/** Stop any currently-playing chime and cancel the loop immediately. */
+export function stopCompletionChime() {
+  chimeLooping = false;
+  if (loopTimeout !== null) {
+    clearTimeout(loopTimeout);
+    loopTimeout = null;
+  }
+  const c = getCtx();
+  const t = c ? c.currentTime : 0;
+  for (const osc of activeOscillators.splice(0)) {
+    try {
+      osc.stop(t);
+    } catch {
+      /* already stopped */
+    }
+  }
+}
+
+/** Play one cycle of the ~6s completion chime. */
+function _playOneCycle() {
   const c = getCtx();
   if (!c) return;
   if (c.state === "suspended") c.resume().catch(() => {});
@@ -57,10 +87,19 @@ export function playCompletionChime() {
   tone(1046.5, 3.7, 2.3, 0.18);
   // Final sparkle
   tone(1318.51, 5.0, 0.9, 0.16);
+}
+
+/**
+ * Start the completion chime and keep repeating it every ~6.5s
+ * until stopCompletionChime() is called.
+ */
+export function playCompletionChime() {
+  // Stop any previous loop first.
+  stopCompletionChime();
+  chimeLooping = true;
 
   if (typeof navigator !== "undefined" && "vibrate" in navigator) {
     try {
-      // ~6s vibration pattern
       navigator.vibrate?.([
         200, 120, 200, 120, 200, 400,
         150, 100, 150, 100, 300, 500,
@@ -70,6 +109,15 @@ export function playCompletionChime() {
       /* ignore */
     }
   }
+
+  function scheduleNext() {
+    if (!chimeLooping) return;
+    _playOneCycle();
+    // ~6.5s — slight gap so cycles don't overlap.
+    loopTimeout = setTimeout(scheduleNext, 6500);
+  }
+
+  scheduleNext();
 }
 
 /** Must be called from a user gesture (click/tap) to unlock audio on iOS/Safari. */

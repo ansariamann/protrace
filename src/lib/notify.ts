@@ -1,11 +1,9 @@
 // Live timer notification for mobile. Uses the Web Notification API with a
 // stable tag so repeated notify() calls UPDATE the same banner instead of
-// stacking. On Android Chrome this shows a persistent countdown in the
-// notification tray while a timer is running.
+// stacking. The service worker drives the countdown independently so the
+// notification keeps updating even when the page is suspended on mobile.
 
 let permission: NotificationPermission | "unsupported" = "unsupported";
-let activeTag: string | null = null;
-let lastBody = "";
 let registrationPromise: Promise<ServiceWorkerRegistration | null> | null = null;
 
 function supported(): boolean {
@@ -47,65 +45,43 @@ export function notificationsGranted(): boolean {
   return supported() && Notification.permission === "granted";
 }
 
-/** Show / update a live timer notification. Silent updates (no sound/vibrate). */
+/** Tell the SW to start/update a live timer notification. */
 export async function showTimerNotification(opts: {
   tag: string;
-  title: string;
-  body: string;
+  activityName: string;
+  endAt: number;    // absolute timestamp (ms) when the timer finishes
+  allocated: number; // total ms allocated
 }) {
   if (!notificationsGranted()) return;
-  if (opts.body === lastBody && activeTag === opts.tag) return;
 
   try {
     const registration = await registerNotificationServiceWorker();
-
-    if (registration) {
-      await registration.showNotification(opts.title, {
-        body: opts.body,
+    if (registration?.active) {
+      registration.active.postMessage({
+        type: "TIMER_TICK",
         tag: opts.tag,
-        silent: true,
-        requireInteraction: true,
-        badge: "/icon-192.png",
-        icon: "/icon-192.png",
-        data: { url: "/" },
+        activityName: opts.activityName,
+        endAt: opts.endAt,
+        allocated: opts.allocated,
       });
-    } else {
-      const n = new Notification(opts.title, {
-        body: opts.body,
-        tag: opts.tag,
-        silent: true,
-        requireInteraction: false,
-        badge: "/icon-192.png",
-        icon: "/icon-192.png",
-      });
-      n.onclick = () => {
-        try {
-          window.focus();
-        } catch {
-          /* ignore */
-        }
-        n.close();
-      };
     }
-
-    activeTag = opts.tag;
-    lastBody = opts.body;
   } catch {
     /* ignore */
   }
 }
 
+/** Tell the SW to stop and dismiss the timer notification. */
 export async function clearTimerNotification() {
-  const currentTag = activeTag;
-  activeTag = null;
-  lastBody = "";
-
   try {
     const registration = await registerNotificationServiceWorker();
-    const notifications = registration ? await registration.getNotifications() : [];
-    for (const notification of notifications) {
-      if (!currentTag || notification.tag === currentTag || notification.tag.startsWith("protrace-timer-")) {
-        notification.close();
+    if (registration?.active) {
+      registration.active.postMessage({ type: "TIMER_CLEAR" });
+    }
+    // Belt-and-braces: close any lingering notifications directly.
+    if (registration) {
+      const notifications = await registration.getNotifications();
+      for (const n of notifications) {
+        if (n.tag.startsWith("protrace-timer-")) n.close();
       }
     }
   } catch {

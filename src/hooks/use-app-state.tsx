@@ -10,9 +10,8 @@ import {
   stopActivity,
   liveElapsed,
   uid,
-  formatHMS,
 } from "@/lib/storage";
-import { playCompletionChime, unlockAudio } from "@/lib/sound";
+import { playCompletionChime, stopCompletionChime, unlockAudio } from "@/lib/sound";
 import {
   requestNotificationPermission,
   showTimerNotification,
@@ -128,11 +127,11 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
       // Push live notification for the first running activity
         if (liveRunning) {
-        const pct = Math.min(100, Math.round((liveRunning.elapsed / liveRunning.allocated) * 100));
           void showTimerNotification({
           tag: `protrace-timer-${liveRunning.id}`,
-          title: `⏱ ${liveRunning.name} · ${formatHMS(liveRunning.remaining)} left`,
-          body: `${pct}% used — tap to open Protrace`,
+          activityName: liveRunning.name,
+          endAt: now + liveRunning.remaining,
+          allocated: liveRunning.allocated,
         });
       }
 
@@ -196,13 +195,16 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           return { ...s, activities };
         });
       },
-      pauseActivity: (id) =>
+      pauseActivity: (id) => {
+        stopCompletionChime();
         setState((s) => ({
           ...s,
           activities: s.activities.map((a) => (a.id === id ? stopActivity(a) : a)),
-        })),
+        }));
+      },
       resetActivity: (id) => {
         chimedRef.current.delete(id);
+        stopCompletionChime();
         setState((s) => ({
           ...s,
           activities: s.activities.map((a) =>

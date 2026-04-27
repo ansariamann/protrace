@@ -68,7 +68,7 @@ export function defaultState(): AppState {
     history: [],
     templates: DEFAULT_TEMPLATES,
     theme: "dark",
-    autoApplyTemplates: false,
+    autoApplyTemplates: true,
     soundEnabled: true,
   };
 }
