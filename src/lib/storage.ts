@@ -38,6 +38,7 @@ export type AppState = {
   theme: Theme;
   autoApplyTemplates: boolean;
   soundEnabled: boolean;
+  vibrationEnabled: boolean;
 };
 
 const STORAGE_KEY = "dat.state.v1";
@@ -70,6 +71,7 @@ export function defaultState(): AppState {
     theme: "dark",
     autoApplyTemplates: true,
     soundEnabled: true,
+    vibrationEnabled: true,
   };
 }
 

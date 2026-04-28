@@ -11,7 +11,7 @@ import {
   liveElapsed,
   uid,
 } from "@/lib/storage";
-import { playCompletionChime, stopCompletionChime, unlockAudio } from "@/lib/sound";
+import { playCompletionChime, stopCompletionChime, unlockAudio, updateMediaSession } from "@/lib/sound";
 import {
   requestNotificationPermission,
   showTimerNotification,
@@ -39,6 +39,7 @@ type Ctx = {
   setTheme: (t: Theme) => void;
   setAutoApply: (v: boolean) => void;
   setSoundEnabled: (v: boolean) => void;
+  setVibrationEnabled: (v: boolean) => void;
   clearAll: () => void;
 };
 
@@ -100,6 +101,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     if (!hydrated || !hasRunning) {
       void clearTimerNotification();
+      updateMediaSession(null);
       return;
     }
 
@@ -127,18 +129,40 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
       // Push live notification for the first running activity
         if (liveRunning) {
+          updateMediaSession({
+            title: liveRunning.name,
+            elapsed: liveRunning.elapsed,
+            duration: liveRunning.allocated,
+          });
           void showTimerNotification({
           tag: `protrace-timer-${liveRunning.id}`,
           activityName: liveRunning.name,
           endAt: now + liveRunning.remaining,
           allocated: liveRunning.allocated,
         });
+      } else {
+        updateMediaSession(null);
       }
 
       if (triggered.length === 0) return;
       for (const id of triggered) chimedRef.current.add(id);
-      if (s.soundEnabled) playCompletionChime();
+      
+      if (s.soundEnabled || s.vibrationEnabled) {
+        playCompletionChime({ sound: s.soundEnabled, vibrate: s.vibrationEnabled });
+      }
       void clearTimerNotification();
+      updateMediaSession(null);
+      
+      const names = triggered.map(id => s.activities.find(a => a.id === id)?.name || "Activity");
+      toast.success(`${names.join(", ")} completed!`, {
+        duration: Infinity,
+        action: {
+          label: "Stop",
+          onClick: () => stopCompletionChime(),
+        },
+        onDismiss: () => stopCompletionChime(),
+      });
+
       setState((curr) => ({
         ...curr,
         activities: curr.activities.map((a) =>
@@ -294,6 +318,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       setTheme: (theme) => setState((s) => ({ ...s, theme })),
       setAutoApply: (v) => setState((s) => ({ ...s, autoApplyTemplates: v })),
       setSoundEnabled: (v) => setState((s) => ({ ...s, soundEnabled: v })),
+      setVibrationEnabled: (v) => setState((s) => ({ ...s, vibrationEnabled: v })),
       clearAll: () => {
         chimedRef.current.clear();
         setState(defaultState());

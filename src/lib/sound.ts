@@ -93,26 +93,26 @@ function _playOneCycle() {
  * Start the completion chime and keep repeating it every ~6.5s
  * until stopCompletionChime() is called.
  */
-export function playCompletionChime() {
+export function playCompletionChime(opts: { sound?: boolean; vibrate?: boolean } = { sound: true, vibrate: false }) {
   // Stop any previous loop first.
   stopCompletionChime();
-  chimeLooping = true;
-
-  if (typeof navigator !== "undefined" && "vibrate" in navigator) {
-    try {
-      navigator.vibrate?.([
-        200, 120, 200, 120, 200, 400,
-        150, 100, 150, 100, 300, 500,
-        400, 200, 600,
-      ]);
-    } catch {
-      /* ignore */
-    }
-  }
+  if (opts.sound || opts.vibrate) chimeLooping = true;
+  else return;
 
   function scheduleNext() {
     if (!chimeLooping) return;
-    _playOneCycle();
+    if (opts.sound) _playOneCycle();
+    if (opts.vibrate && typeof navigator !== "undefined" && "vibrate" in navigator) {
+      try {
+        navigator.vibrate?.([
+          200, 120, 200, 120, 200, 400,
+          150, 100, 150, 100, 300, 500,
+          400, 200, 600,
+        ]);
+      } catch {
+        /* ignore */
+      }
+    }
     // ~6.5s — slight gap so cycles don't overlap.
     loopTimeout = setTimeout(scheduleNext, 6500);
   }
@@ -151,4 +151,44 @@ export function installAudioUnlocker() {
   window.addEventListener("pointerdown", handler, { once: true });
   window.addEventListener("keydown", handler, { once: true });
   window.addEventListener("touchstart", handler, { once: true });
+}
+
+let silentAudio: HTMLAudioElement | null = null;
+
+export function updateMediaSession(opts: { title: string; elapsed: number; duration: number } | null) {
+  if (typeof window === "undefined") return;
+  if (!("mediaSession" in navigator)) return;
+
+  if (opts === null) {
+    if (silentAudio && !silentAudio.paused) {
+      silentAudio.pause();
+    }
+    navigator.mediaSession.metadata = null;
+    return;
+  }
+
+  if (!silentAudio) {
+    // 1 second of silence
+    silentAudio = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA");
+    silentAudio.loop = true;
+  }
+  
+  if (silentAudio.paused) {
+    silentAudio.play().catch(() => {});
+  }
+
+  navigator.mediaSession.metadata = new MediaMetadata({
+    title: opts.title,
+    artist: "Protrace Timer",
+  });
+
+  try {
+    navigator.mediaSession.setPositionState({
+      duration: Math.max(1, opts.duration / 1000),
+      playbackRate: 1,
+      position: Math.max(0, Math.min(opts.elapsed / 1000, opts.duration / 1000)),
+    });
+  } catch {
+    /* ignore */
+  }
 }

@@ -5,7 +5,6 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { ActivityCard } from "@/components/ActivityCard";
-import { EfficiencyRing } from "@/components/EfficiencyRing";
 import { useAppState, useTicker } from "@/hooks/use-app-state";
 import { formatMin, liveElapsed } from "@/lib/storage";
 
@@ -32,7 +31,6 @@ function TodayPage() {
   const totalRemaining = Math.max(0, totalAllocated - totalElapsed);
   const efficiency = totalAllocated > 0 ? totalElapsed / totalAllocated : 0;
   const pct = Math.round(efficiency * 100);
-  const completedCount = state.activities.filter((a) => a.completed).length;
 
   const today = new Date();
   const dayName = today.toLocaleDateString(undefined, { weekday: "long" });
@@ -61,25 +59,11 @@ function TodayPage() {
       </header>
 
       {/* Hero stats */}
-      <section className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
+      <section className="mt-6">
         <div className="grid grid-cols-3 gap-3">
           <Stat label="Allocated" value={formatMin(totalAllocated)} />
-          <Stat label="Used" value={formatMin(totalElapsed)} accent />
+          <Stat label="Efficiency" value={`${pct}%`} accent />
           <Stat label="Left" value={formatMin(totalRemaining)} />
-        </div>
-        <div className="flex items-center justify-between rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-soft)] lg:px-6">
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              Efficiency
-            </p>
-            <p className="mt-1 font-display text-3xl font-bold tracking-tight">
-              {pct}<span className="text-lg text-muted-foreground">%</span>
-            </p>
-            <p className="mt-0.5 text-[11px] text-muted-foreground">
-              {completedCount} of {state.activities.length} done
-            </p>
-          </div>
-          <EfficiencyRing progress={efficiency} size={84} stroke={7} />
         </div>
       </section>
 

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Plus, Pencil, Trash2, Check, X, Sun, Moon, Monitor, Sparkles, Volume2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Check, X, Sun, Moon, Monitor, Sparkles, Volume2, Vibrate } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
@@ -42,6 +42,7 @@ function SettingsPage() {
     setTheme,
     setAutoApply,
     setSoundEnabled,
+    setVibrationEnabled,
     clearAll,
   } = useAppState();
 
@@ -301,6 +302,13 @@ function SettingsPage() {
             icon={<Volume2 className="h-4 w-4 text-primary" />}
             checked={state.soundEnabled}
             onChange={setSoundEnabled}
+          />
+          <Toggle
+            label="Vibrate when timer ends"
+            description="Vibrate the device when an activity reaches its allocated time (on supported devices)."
+            icon={<Vibrate className="h-4 w-4 text-primary" />}
+            checked={state.vibrationEnabled}
+            onChange={setVibrationEnabled}
           />
         </div>
       </section>
