@@ -75,8 +75,6 @@ function Ring({ pct, isFinished }: { pct: number; isFinished: boolean }) {
 const PRESETS = [
   { label: "1m",  ms: 1  * 60_000 },
   { label: "5m",  ms: 5  * 60_000 },
-  { label: "10m", ms: 10 * 60_000 },
-  { label: "25m", ms: 25 * 60_000 },
   { label: "45m", ms: 45 * 60_000 },
   { label: "1h",  ms: 60 * 60_000 },
 ];
@@ -317,8 +315,6 @@ function StopwatchPage() {
                     style={{
                       display: "inline-block",
                       animation: isRunning ? "sw-blink 1s step-end infinite" : "none",
-                      opacity: isRunning ? 1 : 0.4,
-                      transition: "opacity 0.3s",
                     }}
                   >:</span>
                   {String(dispS).padStart(2, "0")}
