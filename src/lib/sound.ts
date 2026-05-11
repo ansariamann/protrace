@@ -180,6 +180,11 @@ export function updateMediaSession(opts: { title: string; elapsed: number; durat
   navigator.mediaSession.metadata = new MediaMetadata({
     title: opts.title,
     artist: "Protrace Timer",
+    album: "Protrace",
+    artwork: [
+      { src: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { src: "/icon-512.png", sizes: "512x512", type: "image/png" }
+    ]
   });
 
   try {

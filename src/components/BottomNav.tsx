@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 
 const tabs = [
   { to: "/", label: "Today", icon: Clock },
+  { to: "/stopwatch", label: "Timer", icon: Hourglass },
   { to: "/history", label: "History", icon: History },
   { to: "/settings", label: "Settings", icon: Settings },
 ] as const;
